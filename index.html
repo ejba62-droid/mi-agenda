@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda · Salón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ============================================================ -->
+<!-- CONFIGURACIÓN DE FIREBASE — EDUARDO, LEE ESTO                -->
+<!-- ============================================================ -->
+<!-- 1. Ve a https://console.firebase.google.com                  -->
+<!-- 2. Crea un proyecto nuevo (gratis)                            -->
+<!-- 3. Dentro del proyecto, ve a "Firestore Database" y créala    -->
+<!--    en modo de producción (luego configuramos las reglas)     -->
+<!-- 4. Ve a Configuración del proyecto (ícono de engranaje) >     -->
+<!--    "Tus apps" > ícono "</>" (Web) > registra la app           -->
+<!-- 5. Copia el objeto firebaseConfig que te entrega y REEMPLAZA  -->
+<!--    el de abajo (busca "PEGA_TU_CONFIG_AQUI")                  -->
+<!-- ============================================================ -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, deleteDoc,
+    onSnapshot, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // PEGA_TU_CONFIG_AQUI — reemplaza este objeto con el que te da Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAi9Qs-oH-emW4w0Rf2KXi6bNQQ0V1JD3Q",
+    authDomain: "salon-margaret.firebaseapp.com",
+    projectId: "salon-margaret",
+    storageBucket: "salon-margaret.firebasestorage.app",
+    messagingSenderId: "1076419232986",
+    appId: "1:1076419232986:web:85b41fedfb0159a57811e3"
+  };
+
+  let app, db;
+  let firebaseReady = false;
+
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    firebaseReady = true;
+  } catch (e) {
+    console.error("Firebase no configurado todavía:", e);
+  }
+
+  window.__firebase = {
+    ready: firebaseReady,
+    db, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy
+  };
+</script>
+
+<style>
+  :root {
+    --cream: #FAF6F1;
+    --cream-deep: #F1E9DF;
+    --ink: #2A2522;
+    --ink-soft: #5C5450;
+    --copper: #B8553D;
+    --copper-deep: #9A4530;
+    --sage: #8A9580;
+    --gold: #C9A961;
+    --line: #E3D9CC;
+    --white: #FFFFFF;
+    --shadow: 0 2px 8px rgba(42,37,34,0.06);
+    --shadow-lift: 0 8px 24px rgba(42,37,34,0.12);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+    min-height: 100vh;
+  }
+
+  /* ---------- HEADER ---------- */
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .brand .mark {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--copper);
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 38px);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 6px 13px 6px 10px;
+  }
+  .sync-pill .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--sage);
+  }
+  .sync-pill.offline .dot { background: var(--copper); }
+  .sync-pill.offline { color: var(--copper-deep); }
+
+  /* ---------- TABS ---------- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    margin-right: 22px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  .tab.active { color: var(--ink); }
+  .tab::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -1px;
+    width: 100%; height: 2px;
+    background: var(--copper);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+  .tab.active::after { transform: scaleX(1); }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: translateY(0);} }
+
+  /* ---------- CALENDAR NAV ---------- */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .cal-nav .month-label {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .nav-btns { display: flex; gap: 8px; }
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .nav-btn:hover { background: var(--cream-deep); transform: translateY(-1px); }
+  .nav-btn.today-btn {
+    width: auto; border-radius: 100px; padding: 0 16px;
+    font-size: 13px; font-weight: 600; font-family: 'Inter';
+  }
+
+  /* ---------- CALENDAR GRID ---------- */
+  .weekday-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .weekday-row span {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    text-align: center;
+    padding-bottom: 4px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .day-cell {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    min-height: 92px;
+    min-width: 0;
+    padding: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .day-cell:hover { border-color: var(--copper); box-shadow: var(--shadow); }
+  .day-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+  .day-cell.empty:hover { border-color: transparent; box-shadow: none; }
+
+  .day-cell.is-today {
+    border-color: var(--copper);
+    border-width: 2px;
+  }
+  .day-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .day-cell.is-today .day-num { color: var(--copper); }
+
+  .strand {
+    font-size: 11px;
+    background: var(--cream-deep);
+    border-left: 3px solid var(--copper);
+    border-radius: 4px;
+    padding: 3px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+  .strand b { font-weight: 600; }
+  .strand.more {
+    border-left-color: var(--gold);
+    color: var(--ink-soft);
+    background: transparent;
+    font-weight: 600;
+  }
+
+  /* ---------- MODAL ---------- */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(42,37,34,0.4);
+    align-items: center; justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--cream);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lift);
+    padding: 26px;
+  }
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .modal h2 .cap { text-transform: capitalize; }
+  .modal .sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+
+  .appt-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .appt-card .info b { display: block; font-size: 14.5px; }
+  .appt-card .info span { font-size: 13px; color: var(--ink-soft); }
+  .appt-card .time { font-size: 12px; color: var(--copper); font-weight: 600; margin-bottom: 2px; display: block; }
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); font-size: 15px;
+    padding: 4px; border-radius: 6px; line-height: 1;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .icon-btn:hover { color: var(--copper-deep); background: var(--cream-deep); }
+
+  .empty-note {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 14px 0 18px;
+    font-style: italic;
+  }
+
+  form.add-form {
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--ink-soft);
+  }
+  .field input, .field select {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus {
+    outline: 2px solid var(--copper);
+    outline-offset: 1px;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 100px;
+    padding: 11px 20px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--copper); color: var(--white); width: 100%; }
+  .btn-primary:hover { background: var(--copper-deep); }
+  .btn-ghost { background: none; color: var(--ink-soft); }
+  .modal-close-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+  /* ---------- INVENTORY ---------- */
+  .inv-add {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .inv-add input { flex: 1; min-width: 160px; }
+  .inv-add input.qty { max-width: 110px; }
+
+  .inv-table {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .inv-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 90px 44px;
+    align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+    gap: 10px;
+  }
+  .inv-row:last-child { border-bottom: none; }
+  .inv-row.head {
+    background: var(--cream-deep);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .inv-name { font-weight: 600; font-size: 14.5px; }
+  .qty-controls {
+    display: flex; align-items: center; gap: 6px;
+    justify-content: center;
+  }
+  .qty-controls button {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+  .qty-controls button:hover { background: var(--cream-deep); }
+  .qty-val { min-width: 28px; text-align: center; font-weight: 700; font-size: 14.5px; }
+  .qty-val.low { color: var(--copper-deep); }
+  .stock-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 100px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .stock-tag.ok { background: rgba(138,149,128,0.18); color: #5d6654; }
+  .stock-tag.low { background: rgba(184,85,61,0.14); color: var(--copper-deep); }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--ink-soft);
+  }
+  .empty-state .glyph {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 26px;
+    color: var(--copper);
+    margin-bottom: 8px;
+  }
+
+  .config-banner {
+    background: #FFF8EC;
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+  .config-banner b { color: var(--copper-deep); }
+  .config-banner code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  @media (max-width: 560px) {
+    .app { padding: 18px 12px 60px; }
+    header.top { margin-bottom: 18px; }
+    .tabs { margin-bottom: 16px; }
+    .cal-nav { margin-bottom: 12px; }
+    .cal-nav .month-label { font-size: 18px; }
+    .nav-btn { width: 32px; height: 32px; }
+
+    .weekday-row span { font-size: 10px; letter-spacing: 0.02em; }
+
+    .cal-grid { gap: 4px; }
+    .day-cell {
+      min-height: 56px;
+      padding: 4px;
+      border-radius: 8px;
+      gap: 3px;
+      overflow: hidden;
+    }
+    .day-num { font-size: 11px; }
+    .strand {
+      font-size: 0;
+      line-height: 0;
+      padding: 0;
+      height: 7px;
+      border-radius: 3px;
+      border-left: none;
+    }
+    .strand.more { display: none; }
+
+    .inv-row { grid-template-columns: 1fr 80px 36px; }
+    .inv-row .stock-tag { display: none; }
+  }
+
+  @media (min-width: 561px) and (max-width: 760px) {
+    .day-cell { min-height: 76px; }
+    .strand { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="mark">Salón</span>
+      <h1>Agenda</h1>
+    </div>
+    <div id="syncPill" class="sync-pill offline">
+      <span class="dot"></span>
+      <span id="syncText">Conectando…</span>
+    </div>
+  </header>
+
+  <div id="configBanner" class="config-banner" style="display:none;">
+    ⚠️ <b>Falta conectar Firebase.</b> Esta página todavía no guarda datos en la nube — solo funciona en este navegador.
+    Abre el archivo <code>index.html</code> y reemplaza el bloque <code>firebaseConfig</code> con el que te entrega tu proyecto de Firebase (lo explico en las instrucciones que te paso aparte).
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="agenda">Agenda</button>
+    <button class="tab" data-view="inventario">Inventario</button>
+  </div>
+
+  <!-- AGENDA VIEW -->
+  <section id="view-agenda" class="view active">
+    <div class="cal-nav">
+      <div class="month-label" id="monthLabel">—</div>
+      <div class="nav-btns">
+        <button class="nav-btn today-btn" id="todayBtn">Hoy</button>
+        <button class="nav-btn" id="prevBtn" aria-label="Mes anterior">‹</button>
+        <button class="nav-btn" id="nextBtn" aria-label="Mes siguiente">›</button>
+      </div>
+    </div>
+    <div class="weekday-row">
+      <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </section>
+
+  <!-- INVENTORY VIEW -->
+  <section id="view-inventario" class="view">
+    <div class="inv-add">
+      <input type="text" id="invNameInput" placeholder="Nombre del producto (ej. Shampoo morado 1L)">
+      <input type="number" id="invQtyInput" class="qty" placeholder="Cantidad" min="0">
+      <button class="btn btn-primary" id="invAddBtn" style="width:auto;">Agregar</button>
+    </div>
+    <div class="inv-table" id="invTable">
+      <div class="inv-row head">
+        <span>Producto</span><span>Cantidad</span><span>Estado</span><span></span>
+      </div>
+    </div>
+    <div id="invEmpty" class="empty-state" style="display:none;">
+      <div class="glyph">Sin productos todavía</div>
+      <div>Agrega tu primer producto arriba para empezar a llevar el control.</div>
+    </div>
+  </section>
+</div>
+
+<!-- DAY MODAL -->
+<div class="modal-backdrop" id="dayModal">
+  <div class="modal">
+    <h2 id="modalDate">—</h2>
+    <p class="sub">Citas agendadas para este día</p>
+    <div id="apptList"></div>
+    <div id="apptEmpty" class="empty-note" style="display:none;">Todavía no hay citas este día.</div>
+
+    <form class="add-form" id="apptForm">
+      <div class="field">
+        <label for="clienteInput">Nombre de la clienta</label>
+        <input type="text" id="clienteInput" placeholder="Ej. María González" required>
+      </div>
+      <div class="field">
+        <label for="servicioInput">Servicio</label>
+        <input type="text" id="servicioInput" placeholder="Ej. Corte + Balayage" required>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="horaInput">Hora</label>
+          <input type="time" id="horaInput" required>
+        </div>
+        <div class="field">
+          <label for="precioInput">Precio (opcional)</label>
+          <input type="number" id="precioInput" placeholder="$">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Agendar cita</button>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-ghost" id="closeModalBtn">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  // Esperamos a que el script de Firebase del head termine de configurarse
+  function waitForFirebase() {
+    return new Promise(resolve => {
+      const check = () => {
+        if (window.__firebase) resolve(window.__firebase);
+        else setTimeout(check, 20);
+      };
+      check();
+    });
+  }
+  const fb = await waitForFirebase();
+
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  let current = new Date();
+  current.setDate(1);
+  let appointments = {}; // { "YYYY-MM-DD": [ {id, cliente, servicio, hora, precio} ] }
+  let inventory = [];    // [ {id, nombre, cantidad} ]
+  let selectedDateKey = null;
+
+  // ---------- LOCAL FALLBACK (si Firebase no está configurado) ----------
+  const LOCAL_APPT_KEY = "salon_appts_v1";
+  const LOCAL_INV_KEY = "salon_inv_v1";
+
+  function loadLocal() {
+    try { appointments = JSON.parse(localStorage.getItem(LOCAL_APPT_KEY) || "{}"); } catch { appointments = {}; }
+    try { inventory = JSON.parse(localStorage.getItem(LOCAL_INV_KEY) || "[]"); } catch { inventory = []; }
+  }
+  function saveLocalAppts() { localStorage.setItem(LOCAL_APPT_KEY, JSON.stringify(appointments)); }
+  function saveLocalInv() { localStorage.setItem(LOCAL_INV_KEY, JSON.stringify(inventory)); }
+
+  // ---------- SYNC STATUS ----------
+  function setSyncStatus(connected) {
+    const pill = document.getElementById("syncPill");
+    const text = document.getElementById("syncText");
+    if (connected) {
+      pill.classList.remove("offline");
+      text.textContent = "Sincronizado";
+    } else {
+      pill.classList.add("offline");
+      text.textContent = "Sin conexión a la nube";
+    }
+  }
+
+  if (!fb.ready) {
+    document.getElementById("configBanner").style.display = "block";
+    setSyncStatus(false);
+    loadLocal();
+  } else {
+    setSyncStatus(true);
+    // Escuchar citas en tiempo real
+    fb.onSnapshot(fb.collection(fb.db, "appointments"), (snap) => {
+      appointments = {};
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const key = data.dateKey;
+        if (!appointments[key]) appointments[key] = [];
+        appointments[key].push({ id: docSnap.id, ...data });
+      });
+      Object.values(appointments).forEach(list => list.sort((a,b) => (a.hora||"").localeCompare(b.hora||"")));
+      renderCalendar();
+      if (selectedDateKey) renderApptList(selectedDateKey);
+    }, (err) => { console.error(err); setSyncStatus(false); });
+
+    // Escuchar inventario en tiempo real
+    fb.onSnapshot(fb.collection(fb.db, "inventory"), (snap) => {
+      inventory = [];
+      snap.forEach(docSnap => inventory.push({ id: docSnap.id, ...docSnap.data() }));
+      inventory.sort((a,b) => a.nombre.localeCompare(b.nombre));
+      renderInventory();
+    }, (err) => { console.error(err); setSyncStatus(false); });
+  }
+
+  // ---------- TABS ----------
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("view-" + tab.dataset.view).classList.add("active");
+    });
+  });
+
+  // ---------- CALENDAR RENDER ----------
+  function dateKey(y, m, d) {
+    return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
+  function renderCalendar() {
+    const y = current.getFullYear();
+    const m = current.getMonth();
+    document.getElementById("monthLabel").textContent = `${MESES[m]} ${y}`;
+
+    const grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+
+    const firstDay = new Date(y, m, 1);
+    // Lunes = 0 ... Domingo = 6
+    let startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+    for (let i = 0; i < startOffset; i++) {
+      const empty = document.createElement("div");
+      empty.className = "day-cell empty";
+      grid.appendChild(empty);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = dateKey(y, m, d);
+      const cell = document.createElement("div");
+      cell.className = "day-cell" + (key === todayKey ? " is-today" : "");
+      cell.innerHTML = `<span class="day-num">${d}</span>`;
+
+      const dayAppts = appointments[key] || [];
+      const maxShow = 2;
+      dayAppts.slice(0, maxShow).forEach(a => {
+        const s = document.createElement("div");
+        s.className = "strand";
+        s.innerHTML = `<b>${escapeHtml(a.cliente)}</b> · ${escapeHtml(a.servicio)}`;
+        cell.appendChild(s);
+      });
+      if (dayAppts.length > maxShow) {
+        const more = document.createElement("div");
+        more.className = "strand more";
+        more.textContent = `+${dayAppts.length - maxShow} más`;
+        cell.appendChild(more);
+      }
+
+      cell.addEventListener("click", () => openDayModal(key, y, m, d));
+      grid.appendChild(cell);
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  document.getElementById("prevBtn").addEventListener("click", () => {
+    current.setMonth(current.getMonth() - 1);
+    renderCalendar();
+  });
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    current.setMonth(current.getMonth() + 1);
+    renderCalendar();
+  });
+  document.getElementById("todayBtn").addEventListener("click", () => {
+    current = new Date(); current.setDate(1);
+    renderCalendar();
+  });
+
+  // ---------- DAY MODAL ----------
+  function openDayModal(key, y, m, d) {
+    selectedDateKey = key;
+    const dateObj = new Date(y, m, d);
+    const weekday = dateObj.toLocaleDateString("es-ES", { weekday: "long" });
+    const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    document.getElementById("modalDate").textContent = `${weekdayCap} ${d} de ${MESES[m]}`;
+    renderApptList(key);
+    document.getElementById("dayModal").classList.add("show");
+  }
+
+  function renderApptList(key) {
+    const list = document.getElementById("apptList");
+    const emptyNote = document.getElementById("apptEmpty");
+    list.innerHTML = "";
+    const dayAppts = (appointments[key] || []).slice().sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
+
+    if (dayAppts.length === 0) {
+      emptyNote.style.display = "block";
+    } else {
+      emptyNote.style.display = "none";
+      dayAppts.forEach(a => {
+        const card = document.createElement("div");
+        card.className = "appt-card";
+        card.innerHTML = `
+          <div class="info">
+            <span class="time">${a.hora || ""}</span>
+            <b>${escapeHtml(a.cliente)}</b>
+            <span>${escapeHtml(a.servicio)}${a.precio ? " · $" + escapeHtml(String(a.precio)) : ""}</span>
+          </div>
+          <button class="icon-btn" data-id="${a.id}" title="Eliminar cita">✕</button>
+        `;
+        card.querySelector("button").addEventListener("click", () => deleteAppt(a.id, key));
+        list.appendChild(card);
+      });
+    }
+  }
+
+  document.getElementById("closeModalBtn").addEventListener("click", () => {
+    document.getElementById("dayModal").classList.remove("show");
+    document.getElementById("apptForm").reset();
+  });
+  document.getElementById("dayModal").addEventListener("click", (e) => {
+    if (e.target.id === "dayModal") {
+      document.getElementById("dayModal").classList.remove("show");
+    }
+  });
+
+  document.getElementById("apptForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cliente = document.getElementById("clienteInput").value.trim();
+    const servicio = document.getElementById("servicioInput").value.trim();
+    const hora = document.getElementById("horaInput").value;
+    const precio = document.getElementById("precioInput").value;
+    if (!cliente || !servicio) return;
+
+    const newAppt = { dateKey: selectedDateKey, cliente, servicio, hora, precio: precio || null };
+
+    if (fb.ready) {
+      const id = `${selectedDateKey}_${Date.now()}`;
+      await fb.setDoc(fb.doc(fb.db, "appointments", id), newAppt);
+    } else {
+      if (!appointments[selectedDateKey]) appointments[selectedDateKey] = [];
+      newAppt.id = "local_" + Date.now();
+      appointments[selectedDateKey].push(newAppt);
+      saveLocalAppts();
+      renderCalendar();
+      renderApptList(selectedDateKey);
+    }
+    document.getElementById("apptForm").reset();
+  });
+
+  async function deleteAppt(id, key) {
+    if (fb.ready) {
+      await fb.deleteDoc(fb.doc(fb.db, "appointments", id));
+    } else {
+      appointments[key] = (appointments[key] || []).filter(a => a.id !== id);
+      saveLocalAppts();
+      renderCalendar();
+      renderApptList(key);
+    }
+  }
+
+  // ---------- INVENTORY ----------
+  function renderInventory() {
+    const table = document.getElementById("invTable");
+    const emptyState = document.getElementById("invEmpty");
+    const rows = table.querySelectorAll(".inv-row:not(.head)");
+    rows.forEach(r => r.remove());
+
+    if (inventory.length === 0) {
+      emptyState.style.display = "block";
+      table.style.display = "none";
+      return;
+    }
+    emptyState.style.display = "none";
+    table.style.display = "block";
+
+    inventory.forEach(item => {
+      const low = item.cantidad <= 2;
+      const row = document.createElement("div");
+      row.className = "inv-row";
+      row.innerHTML = `
+        <span class="inv-name">${escapeHtml(item.nombre)}</span>
+        <span class="qty-controls">
+          <button data-action="minus" aria-label="Restar">−</button>
+          <span class="qty-val ${low ? "low" : ""}">${item.cantidad}</span>
+          <button data-action="plus" aria-label="Sumar">+</button>
+        </span>
+        <span class="stock-tag ${low ? "low" : "ok"}">${low ? "Stock bajo" : "Disponible"}</span>
+        <button class="icon-btn" data-action="delete" title="Eliminar producto">✕</button>
+      `;
+      row.querySelector('[data-action="minus"]').addEventListener("click", () => changeQty(item, -1));
+      row.querySelector('[data-action="plus"]').addEventListener("click", () => changeQty(item, 1));
+      row.querySelector('[data-action="delete"]').addEventListener("click", () => deleteItem(item));
+      table.appendChild(row);
+    });
+  }
+
+  async function changeQty(item, delta) {
+    const newQty = Math.max(0, (item.cantidad || 0) + delta);
+    if (fb.ready) {
+      await fb.setDoc(fb.doc(fb.db, "inventory", item.id), { nombre: item.nombre, cantidad: newQty });
+    } else {
+      item.cantidad = newQty;
+      saveLocalInv();
+      renderInventory();
+    }
+  }
+
+  async function deleteItem(item) {
+    if (fb.ready) {
+      await fb.deleteDoc(fb.doc(fb.db, "inventory", item.id));
+    } else {
+      inventory = inventory.filter(i => i.id !== item.id);
+      saveLocalInv();
+      renderInventory();
+    }
+  }
+
+  document.getElementById("invAddBtn").addEventListener("click", async () => {
+    const nombre = document.getElementById("invNameInput").value.trim();
+    const cantidad = parseInt(document.getElementById("invQtyInput").value, 10);
+    if (!nombre || isNaN(cantidad)) return;
+
+    if (fb.ready) {
+      const id = "item_" + Date.now();
+      await fb.setDoc(fb.doc(fb.db, "inventory", id), { nombre, cantidad });
+    } else {
+      inventory.push({ id: "local_" + Date.now(), nombre, cantidad });
+      saveLocalInv();
+      renderInventory();
+    }
+    document.getElementById("invNameInput").value = "";
+    document.getElementById("invQtyInput").value = "";
+  });
+
+  // ---------- INIT ----------
+  renderCalendar();
+  renderInventory();
+</script>
+
+</body>
+</html>
