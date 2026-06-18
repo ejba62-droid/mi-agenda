@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Salón Margaret - Gestión Integral</title>
+  <title>Agenda · Salón Margaret</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg: #fdfbf7;
@@ -22,12 +26,12 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
       background-color: var(--bg);
       color: var(--ink);
+      font-family: 'Inter', sans-serif;
       padding: 20px;
     }
 
@@ -39,15 +43,17 @@
       max-width: 1200px;
       margin-left: auto;
       margin-right: auto;
+      gap: 16px;
     }
 
     h1 {
+      font-family: 'Fraunces', serif;
       font-size: 28px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: -0.5px;
     }
 
-    /* Píldora de Sincronización */
+    /* Píldora de Estado de Sincronización */
     .sync-pill {
       background-color: #e6f4ea;
       color: var(--green);
@@ -58,13 +64,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
     .sync-pill.offline {
       background-color: #fce8e6;
       color: var(--red);
     }
 
-    /* Tabs de Navegación */
+    /* Barra de Navegación por Pestañas */
     .tabs-nav {
       display: flex;
       gap: 8px;
@@ -79,13 +86,14 @@
       color: var(--ink-soft);
       border-bottom: 2px solid transparent;
       transition: all 0.2s ease;
+      font-size: 15px;
     }
     .tab.active {
       color: var(--copper);
       border-bottom-color: var(--copper);
     }
 
-    /* Vistas */
+    /* Contenedores de Vistas */
     .view {
       display: none;
       max-width: 1200px;
@@ -96,13 +104,14 @@
     }
 
     /* -----------------------------------------
-       ESTILOS DEL CALENDARIO
+       CALENDARIO (ADAPTABLE PC / MÓVIL)
     ----------------------------------------- */
     .cal-controls {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     .cal-grid {
       display: grid;
@@ -167,7 +176,7 @@
     }
 
     /* -----------------------------------------
-       ESTILOS DE MODALES CRÍTICOS (CORRECCIÓN)
+       MODALES RESILIENTES (REMEDIACIÓN)
     ----------------------------------------- */
     .modal {
       display: none;
@@ -176,8 +185,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(44, 37, 32, 0.5); /* Sombra elegante */
-      backdrop-filter: blur(4px); /* Suavizado de fondo */
+      background-color: rgba(44, 37, 32, 0.4);
+      backdrop-filter: blur(4px);
       z-index: 2000;
       justify-content: center;
       align-items: center;
@@ -194,7 +203,7 @@
       max-width: 480px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -217,9 +226,7 @@
       color: var(--ink-soft);
     }
 
-    /* -----------------------------------------
-       COMPONENTES REUTILIZABLES UI
-    ----------------------------------------- */
+    /* Inputs e Interfaces Uniformes */
     input, select, textarea {
       width: 100%;
       padding: 10px 12px;
@@ -228,6 +235,7 @@
       font-size: 14px;
       background-color: var(--surface);
       color: var(--ink);
+      font-family: inherit;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
@@ -236,7 +244,7 @@
     .btn {
       background-color: var(--copper);
       color: var(--surface);
-      padding: 10px 16px;
+      padding: 11px 16px;
       border: none;
       border-radius: 8px;
       font-weight: 600;
@@ -247,7 +255,7 @@
       gap: 8px;
       font-size: 14px;
     }
-    .btn:hover { opacity: 0.9; }
+    .btn:hover { opacity: 0.95; }
     .btn-ghost {
       background: transparent;
       color: var(--copper);
@@ -264,7 +272,7 @@
     }
     .icon-btn:hover { color: var(--red); }
 
-    /* Listas internas de Citas en Modal */
+    /* Listas de citas dentro de modales */
     #apptList {
       display: flex;
       flex-direction: column;
@@ -293,15 +301,12 @@
     }
 
     /* -----------------------------------------
-       VISTAS: ATENCIONES & RESUMEN
+       VISTA 2: ARCHIVO DE ATENCIONES DIARIAS
     ----------------------------------------- */
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr 340px;
       gap: 24px;
-    }
-    @media (max-width: 850px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
     }
     .cards-grid {
       display: flex;
@@ -364,7 +369,7 @@
     .stat-box .sub { font-size: 12px; color: var(--ink-soft); }
 
     /* -----------------------------------------
-       VISTAS: FICHAS TÉCNICAS CLIENTES
+       VISTA 3: FICHAS TÉCNICAS
     ----------------------------------------- */
     .clientes-grid {
       display: grid;
@@ -403,7 +408,7 @@
     }
 
     /* -----------------------------------------
-       VISTAS: INVENTARIO (TABLAS FLUIDAS)
+       VISTA 4: INVENTARIO (DATA GRID)
     ----------------------------------------- */
     .inv-table {
       background: var(--surface);
@@ -445,7 +450,6 @@
     .stock-tag.ok { background: #e6f4ea; color: var(--green); }
     .stock-tag.low { background: #fce8e6; color: var(--red); }
 
-    /* Bloques de Fila de Insumos Dinámicos en modal */
     .prod-used-row {
       display: grid;
       grid-template-columns: 2fr 1fr 40px;
@@ -454,7 +458,6 @@
       margin-bottom: 8px;
     }
 
-    /* Historial general abajo de inventario */
     .hist-row {
       display: flex;
       justify-content: space-between;
@@ -468,7 +471,6 @@
     .hist-row .h-delta { color: var(--red); font-weight: 700; }
     .hist-row .h-date { font-size: 11.5px; color: var(--ink-soft); }
 
-    /* Estilos Modal Historial de Cliente */
     .hist-atencion-item {
       border: 1px solid var(--line);
       background: var(--surface);
@@ -479,23 +481,142 @@
     .hist-atencion-meta {
       display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft);
     }
+
+    /* ========================================================
+       MEDIA QUERIES: RE-DISEÑO ABSOLUTO PARA TELÉFONOS (TLF)
+    ======================================================== */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .tabs-nav {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 6px;
+        margin-bottom: 16px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .tab {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      /* Calendario adaptado a pantallas pequeñas */
+      .cal-controls h2 {
+        width: 100%;
+        order: -1;
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .cal-grid {
+        gap: 4px;
+        padding: 4px;
+      }
+      .weekday-label {
+        font-size: 11px;
+        padding: 4px 0;
+      }
+      .day-cell {
+        min-height: 65px;
+        padding: 4px;
+        border-radius: 6px;
+      }
+      .day-num {
+        font-size: 12px;
+      }
+
+      /* En teléfonos convertimos los textos de las citas en indicadores sutiles */
+      .strand {
+        font-size: 0;
+        width: 6px;
+        height: 6px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 2px;
+        border: none;
+        background-color: var(--copper);
+      }
+      .strand.more {
+        display: none;
+      }
+
+      /* Desgloses verticales en Atenciones */
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .panel-resumen {
+        order: -1; /* Coloca el resumen financiero al principio en tlf */
+      }
+
+      /* Re-estructuración completa de tabla a bloque de tarjetas en Inventario */
+      .inv-row.head {
+        display: none;
+      }
+      .inv-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 16px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        position: relative;
+      }
+      .qty-controls {
+        justify-content: space-between;
+        background-color: var(--cream);
+        padding: 8px;
+        border-radius: 8px;
+      }
+      .btn-del-inv {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+      }
+
+      /* Modales estirados al 100% en pantallas reducidas */
+      .modal {
+        padding: 12px;
+      }
+      .modal-content {
+        padding: 18px;
+        border-radius: 14px;
+      }
+      .prod-used-row {
+        grid-template-columns: 1fr 80px 30px;
+      }
+      
+      /* Inputs dinámicos superiores de inventario */
+      main[id="view-inventario"] div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- HEADER GLOBAL -->
   <header>
     <div>
       <h1>Salón Margaret</h1>
-      <p style="font-size: 13px; color: var(--ink-soft);">Consola del Sistema e Insumos</p>
+      <p style="font-size: 13px; color: var(--ink-soft);">Consola de Gestión de Citas e Insumos</p>
     </div>
     <div id="syncPill" class="sync-pill">
       <span style="width:8px; height:8px; background:currentColor; border-radius:50%;"></span>
-      <span id="syncText">Cargando Estado...</span>
+      <span id="syncText">Estableciendo sincronización...</span>
     </div>
   </header>
 
-  <!-- NAVEGACIÓN PRINCIPAL -->
   <nav class="tabs-nav">
     <div class="tab active" data-view="agenda">Agenda</div>
     <div class="tab" data-view="atenciones">Atenciones Diario</div>
@@ -503,15 +624,12 @@
     <div class="tab" data-view="inventario">Inventario Insumos</div>
   </nav>
 
-  <!-- ========================================================
-       VISTA 1: AGENDA (CALENDARIO)
-  ======================================================== -->
   <main id="view-agenda" class="view active">
     <div class="cal-controls">
-      <button id="prevBtn" class="btn btn-ghost btn-sm">◀ Mes Anterior</button>
+      <button id="prevBtn" class="btn btn-ghost btn-sm">◀ Anterior</button>
       <button id="todayBtn" class="btn btn-ghost btn-sm">Hoy</button>
-      <button id="nextBtn" class="btn btn-ghost btn-sm">Mes Siguiente ▶</button>
-      <h2 id="monthLabel" style="margin-left: 8px; font-size: 20px; text-transform: capitalize;"></h2>
+      <button id="nextBtn" class="btn btn-ghost btn-sm">Siguiente ▶</button>
+      <h2 id="monthLabel" style="margin-left: 8px; font-size: 20px; text-transform: capitalize;">—</h2>
     </div>
     <div class="cal-grid">
       <div class="weekday-label">Lun</div><div class="weekday-label">Mar</div>
@@ -522,172 +640,135 @@
     <div class="cal-grid" id="calGrid" style="margin-top:8px;"></div>
   </main>
 
-  <!-- ========================================================
-       VISTA 2: ATENCIONES
-  ======================================================== -->
   <main id="view-atenciones" class="view">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
-      <div style="display:flex; gap:8px; width:100%; max-width:400px;">
-        <input type="text" id="filtroCliente" placeholder="Buscar atención por nombre de clienta...">
-      </div>
+      <input type="text" id="filtroCliente" placeholder="Buscar por clienta..." style="max-width:350px;">
       <button id="btnNuevaAtencion" class="btn">✨ Registrar Nueva Atención</button>
     </div>
-
     <div class="dashboard-grid">
       <div>
         <div id="atencionEmpty" style="display:none; padding:30px; background:var(--surface); text-align:center; border-radius:12px; border:1px solid var(--line); font-style:italic; color:var(--ink-soft);">
-          No se encontraron registros de atención.
+          Sin registros para mostrar.
         </div>
         <div id="atencionList" class="cards-grid"></div>
       </div>
-
-      <!-- PANEL LATERAL RESUMEN DE INGRESOS -->
       <aside class="panel-resumen">
-        <h3>Resumen Financiero</h3>
+        <h3>Balances</h3>
         <div class="stat-box">
-          <label>Cierre Este Mes</label>
+          <label>Cierre del Mes</label>
           <div class="val" id="totalMes">$0</div>
-          <div class="sub" id="countMes">0 atenciones</div>
+          <div class="sub" id="countMes">0 registros</div>
         </div>
         <div class="stat-box">
-          <label>Esta Semana</label>
+          <label>Cierre de Semana</label>
           <div class="val" id="totalSemana">$0</div>
-          <div class="sub" id="countSemana">0 atenciones</div>
+          <div class="sub" id="countSemana">0 registros</div>
         </div>
         <div class="stat-box">
-          <label>Acumulado Histórico</label>
+          <label>Histórico Acumulado</label>
           <div class="val" id="totalHistorico">$0</div>
-          <div class="sub" id="countTotal">0 atenciones</div>
+          <div class="sub" id="countTotal">0 registros</div>
         </div>
       </aside>
     </div>
   </main>
 
-  <!-- ========================================================
-       VISTA 3: FICHAS TÉCNICAS CLIENTES
-  ======================================================== -->
   <main id="view-clientes" class="view">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
-      <input type="text" id="filtroBaseClientes" placeholder="Filtrar base de clientes por nombre..." style="max-width:400px;">
+      <input type="text" id="filtroBaseClientes" placeholder="Filtrar base de clientes..." style="max-width:350px;">
       <button id="btnNuevoCliente" class="btn">👤 Crear Ficha Técnica</button>
     </div>
     <div id="clientesEmpty" style="display:none; padding:30px; background:var(--surface); text-align:center; border-radius:12px; border:1px solid var(--line); font-style:italic; color:var(--ink-soft);">
-      No hay fichas técnicas creadas que coincidan con la búsqueda.
+      Sin coincidencias.
     </div>
     <div class="clientes-grid" id="clientesGridList"></div>
   </main>
 
-  <!-- ========================================================
-       VISTA 4: INVENTARIO INSUMOS
-  ======================================================== -->
   <main id="view-inventario" class="view">
     <div style="background:var(--surface); border:1px solid var(--line); padding:16px; border-radius:12px; margin-bottom:20px;">
-      <h3 style="margin-bottom:12px; font-size:16px;">+ Cargar Nuevo Insumo / Tinte al Inventario</h3>
+      <h3 style="margin-bottom:12px; font-size:16px;">+ Ingresar Nuevo Insumo / Producto</h3>
       <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px; align-items:center;">
-        <input type="text" id="invNameInput" placeholder="Nombre técnico del producto (Ej: Tinte IGORA 7-0)">
-        <input type="number" id="invQtyInput" placeholder="Cantidad Inicial">
-        <input type="text" id="invUnitInput" placeholder="Métrica (g, cc, un)" value="g">
+        <input type="text" id="invNameInput" placeholder="Nombre (Ej: Tinte IGORA 7-0)">
+        <input type="number" id="invQtyInput" placeholder="Stock">
+        <input type="text" id="invUnitInput" placeholder="Unidad" value="g">
         <button id="invAddBtn" class="btn">Añadir</button>
       </div>
     </div>
-
     <div class="inv-table" id="invTable">
       <div class="inv-row head">
-        <div>Detalle Producto</div>
-        <div>Stock Inicial</div>
-        <div>Consumo Histórico</div>
-        <div>Stock Actual</div>
+        <div>Insumo</div>
+        <div>Inicial</div>
+        <div>Consumido</div>
+        <div>Actual</div>
         <div>Estado</div>
         <div></div>
       </div>
     </div>
-    <div id="invEmpty" style="display:none; padding:30px; background:var(--surface); text-align:center; border-radius:12px; border-top:none; font-style:italic; color:var(--ink-soft);">
-      El inventario está completamente vacío. Añade un producto arriba.
+    <div id="invEmpty" style="display:none; padding:30px; background:var(--surface); text-align:center; border-radius:12px; font-style:italic; color:var(--ink-soft);">
+      Inventario vacío.
     </div>
-
-    <!-- SECCIÓN DE BITÁCORA ABAJO DE LA TABLA -->
     <section id="historialSection" style="margin-top:24px; display:none;">
-      <h3 style="font-size:16px; margin-bottom:12px;">Bitácora de Descuentos (Últimos movimientos)</h3>
+      <h3 style="font-size:16px; margin-bottom:12px;">Bitácora de Descuentos Directos</h3>
       <div class="inv-table" id="historialList"></div>
     </section>
   </main>
 
-  <!-- ========================================================
-       MODAL 1: GESTIÓN DE CITAS DIARIAS (MODAL CORREGIDO)
-  ======================================================== -->
   <div id="dayModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalDate" style="font-size:18px;">—</h3>
-        <button id="closeModalBtn" class="icon-btn" style="font-size: 20px;">✕</button>
+        <h3 id="modalDate">—</h3>
+        <button id="closeModalBtn" class="icon-btn">✕</button>
       </div>
-
       <span id="modalApptCount" style="color:var(--ink-soft); font-size:13px; font-weight:600;">Sin citas</span>
-      
-      <!-- Listado interno de citas agendadas -->
-      <div id="apptEmpty" style="font-style:italic; color:var(--ink-soft); font-size:13px; padding:4px 0;">No hay citas agendadas para este día.</div>
+      <div id="apptEmpty" style="font-style:italic; color:var(--ink-soft); font-size:13px;">No hay citas agendadas.</div>
       <div id="apptList"></div>
-
       <hr style="border:0; border-top:1px solid var(--line); margin:4px 0;">
-      <h4 style="font-size:15px; color:var(--copper);">AGENDAR NUEVA CITA</h4>
-
-      <!-- Formulario vertical sin problemas de desborde horizontal -->
+      <h4 style="font-size:14px; color:var(--copper);">AGENDAR NUEVA CITA</h4>
       <div class="form-group">
         <label>Nombre de la clienta *</label>
         <input type="text" id="clienteInput" placeholder="Ej. Camila Utrera">
       </div>
-
       <div class="form-group">
-        <label>Servicio solicitado *</label>
-        <input type="text" id="servicioInput" placeholder="Ej. Alisado, Corte, Balayage">
+        <label>Servicio *</label>
+        <input type="text" id="servicioInput" placeholder="Ej. Alisado, Corte">
       </div>
-
       <div class="form-group">
-        <label>Hora de la cita</label>
+        <label>Hora</label>
         <input type="time" id="horaInput">
       </div>
-
       <div class="form-group">
-        <label>Precio estimado (opcional)</label>
+        <label>Monto Estimado</label>
         <input type="number" id="precioEstInput" placeholder="$">
       </div>
-
-      <button id="btnAgendarCita" class="btn" style="width:100%; margin-top:4px;">Guardar e Insertar Cita</button>
+      <button id="btnAgendarCita" class="btn">Guardar Cita</button>
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL 2: REGISTRO DE NUEVA ATENCIÓN (CON CONSUMO)
-  ======================================================== -->
   <div id="atencionModal" class="modal">
     <div class="modal-content" style="max-width:550px;">
       <div class="modal-header">
-        <h3 style="font-size:18px;">Registrar Atención</h3>
-        <button id="closeAtencionBtn" class="icon-btn" style="font-size: 20px;">✕</button>
+        <h3>Registrar Atención Realizada</h3>
+        <button id="closeAtencionBtn" class="icon-btn">✕</button>
       </div>
-
       <div class="form-group">
-        <label>Fecha del Servicio *</label>
+        <label>Fecha de Ejecución *</label>
         <input type="date" id="aFechaInput">
       </div>
-
       <div class="form-group">
         <label>Nombre de la Clienta *</label>
         <input type="text" id="aClienteInput" placeholder="Nombre completo">
       </div>
-
       <div class="form-group">
         <label>Servicios Prestados *</label>
-        <input type="text" id="aServicioInput" placeholder="Ej. Tintura + Lavado + Masaje">
+        <input type="text" id="aServicioInput" placeholder="Ej. Tinte + Lavado">
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div class="form-group">
-          <label>Monto Cobrado ($) *</label>
-          <input type="number" id="aPrecioInput" placeholder="Precio real cobrado">
+          <label>Cobro Realizado ($) *</label>
+          <input type="number" id="aPrecioInput" placeholder="Total $">
         </div>
         <div class="form-group">
-          <label>Método de Pago</label>
+          <label>Canal de Pago</label>
           <select id="aMetodoPagoInput">
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
@@ -696,77 +777,60 @@
           </select>
         </div>
       </div>
-
       <div class="form-group">
-        <label>Notas Clínicas / Fórmulas usadas en el cabello</label>
-        <textarea id="aNotasInput" rows="2" placeholder="Ej. Se usó oxidante de 20 vol. Tiempo de pose: 35 mins."></textarea>
+        <label>Fórmulas Químicas / Notas de Campo</label>
+        <textarea id="aNotasInput" rows="2" placeholder="Ej. Oxidante de 20 vol. Mezcla 1:1."></textarea>
       </div>
-
-      <!-- DESCUENTO DINÁMICO DE INVENTARIO -->
       <div style="border:1px solid var(--line); padding:12px; border-radius:8px; background:var(--cream);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <h4 style="font-size:13.5px;">Descontar Insumos del Inventario</h4>
+          <h4 style="font-size:13px;">Asociar Descuento de Insumos</h4>
           <button type="button" id="btnAddProd" class="btn btn-ghost btn-sm">+ Vincular Insumo</button>
         </div>
         <div id="prodUsedList"></div>
       </div>
-
-      <button id="btnGuardarAtencion" class="btn" style="width:100%;">Finalizar y Procesar Cobro</button>
+      <button id="btnGuardarAtencion" class="btn">Procesar y Archivar Cierre</button>
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL 3: CREAR FICHA TÉCNICA CLIENTE
-  ======================================================== -->
   <div id="clienteModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 style="font-size:18px;">Nueva Ficha Técnica</h3>
-        <button id="closeClienteBtn" class="icon-btn" style="font-size: 20px;">✕</button>
+        <h3>Ficha Técnica del Cabello</h3>
+        <button id="closeClienteBtn" class="icon-btn">✕</button>
       </div>
-
       <div class="form-group">
         <label>Nombre de la Clienta *</label>
-        <input type="text" id="cNombreInput" placeholder="Ej. María Ignacia">
+        <input type="text" id="cNombreInput" placeholder="Nombre">
       </div>
-
       <div class="form-group">
-        <label>Teléfono de Contacto</label>
-        <input type="tel" id="cTelefonoInput" placeholder="Ej. +569...">
+        <label>Teléfono</label>
+        <input type="tel" id="cTelefonoInput" placeholder="+569...">
       </div>
-
       <div class="form-group">
-        <label>Fecha de Cumpleaños</label>
+        <label>Aniversario / Cumpleaños</label>
         <input type="date" id="cCumpleInput">
       </div>
-
       <div class="form-group">
-        <label>Correo Electrónico</label>
-        <input type="email" id="cCorreoInput" placeholder="ejemplo@correo.com">
+        <label>Correo</label>
+        <input type="email" id="cCorreoInput" placeholder="correo@ejemplo.com">
       </div>
-
       <div class="form-group">
-        <label>Historial Crítico, Preferencias o Alergias</label>
-        <textarea id="cPreferenciasInput" rows="3" placeholder="Ej. Cuero cabelludo sensible. Prefiere tonos cobrizos. Cabello poroso."></textarea>
+        <label>Historial Clínico Capilar / Preferencias</label>
+        <textarea id="cPreferenciasInput" rows="3" placeholder="Porosidad, alergias, tonos favoritos..."></textarea>
       </div>
-
-      <button id="btnGuardarCliente" class="btn" style="width:100%;">Guardar Ficha Técnica</button>
+      <button id="btnGuardarCliente" class="btn">Dar de Alta Ficha</button>
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL 4: HISTORIAL COMPLETO DE UNA CLIENTA ESPECÍFICA
-  ======================================================== -->
   <div id="clienteHistorialModal" class="modal">
     <div class="modal-content" style="max-width:500px;">
       <div class="modal-header">
-        <h3 id="histNombreCliente" style="font-size:17px;">Historial: Clienta</h3>
-        <button id="closeHistorialBtn" class="icon-btn" style="font-size: 20px;">✕</button>
+        <h3 id="histNombreCliente">Historial</h3>
+        <button id="closeHistorialBtn" class="icon-btn">✕</button>
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center; background:var(--cream); padding:10px; border-radius:8px; border:1px solid var(--line);">
         <div>
-          <div style="font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Total Pagado</div>
+          <div style="font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Facturado</div>
           <div id="histTotalPagado" style="font-weight:700; color:var(--copper); font-size:14px; margin-top:2px;">$0</div>
         </div>
         <div>
@@ -774,18 +838,14 @@
           <div id="histTotalVisitas" style="font-weight:700; font-size:14px; margin-top:2px;">0</div>
         </div>
         <div>
-          <div style="font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Última vez</div>
-          <div id="histUltimaFecha" style="font-weight:700; font-size:12px; margin-top:4px; white-space:nowrap;">—</div>
+          <div style="font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;">Último servicio</div>
+          <div id="histUltimaFecha" style="font-weight:700; font-size:11px; margin-top:4px; white-space:nowrap;">—</div>
         </div>
       </div>
-
       <div id="historialAtencionesClienteList" style="max-height:350px; overflow-y:auto; padding-right:4px;"></div>
     </div>
   </div>
 
-  <!-- ========================================================
-       CÓDIGO DE CONTROL CORE LOGIC (CORREGIDO)
-  ======================================================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -793,7 +853,6 @@
       onSnapshot, query, orderBy, getDocs
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // CONFIGURACIÓN DE FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyAi9Qs-oH-emW4w0Rf2KXi6bNQQ0V1JD3Q",
       authDomain: "salon-margaret.firebaseapp.com",
@@ -803,30 +862,20 @@
       appId: "1:1076419232986:web:85b41fedfb0159a57811e3"
     };
 
-    let app, db;
-    let firebaseReady = false;
+    let app, db, fb = { ready: false };
     try {
       app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-      firebaseReady = true;
+      fb = { ready: true, db, collection, doc, setDoc, deleteDoc, addDoc, onSnapshot };
     } catch (e) {
-      console.error("Firebase error de conexión:", e);
+      console.error("Modo offline activado:", e);
     }
 
-    // Compartir el estado globalmente de forma segura si se requiere expandir
-    window.__firebase = { ready: firebaseReady, db, collection, doc, setDoc, deleteDoc, addDoc, onSnapshot, query, orderBy, getDocs };
-
     const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-
     let current = new Date(); current.setDate(1);
-    let appointments = {};
-    let atenciones = [];
-    let inventory = [];
-    let historial = [];
-    let clientes = [];
-    let selectedDateKey = null;
+    
+    let appointments = {}, atenciones = [], inventory = [], historial = [], clientes = [], selectedDateKey = null;
 
-    // ---------- LOCAL STORAGE FALLBACK ----------
     function loadLocal() {
       try { appointments = JSON.parse(localStorage.getItem("salon_appts_v1") || "{}"); } catch { appointments = {}; }
       try { atenciones = JSON.parse(localStorage.getItem("salon_atenciones_v1") || "[]"); } catch { atenciones = []; }
@@ -834,28 +883,22 @@
       try { historial = JSON.parse(localStorage.getItem("salon_hist_v1") || "[]"); } catch { historial = []; }
       try { clientes = JSON.parse(localStorage.getItem("salon_clientes_v1") || "[]"); } catch { clientes = []; }
     }
-    function saveLocal(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+    function saveLocal(k, d) { localStorage.setItem(k, JSON.stringify(d)); }
 
-    // ---------- ESTADO DE SINCRONIZACIÓN ----------
     function setSyncStatus(ok) {
-      const pill = document.getElementById("syncPill");
-      const text = document.getElementById("syncText");
-      if(pill && text) {
-        pill.classList.toggle("offline", !ok);
-        text.textContent = ok ? "Sincronizado con la Nube" : "Modo Local (Sin conexión)";
+      const p = document.getElementById("syncPill");
+      const t = document.getElementById("syncText");
+      if(p && t) {
+        p.classList.toggle("offline", !ok);
+        t.textContent = ok ? "Sincronizado con la Nube" : "Modo Local Compartido";
       }
     }
 
-    // Inicialización del pipeline de datos
-    if (!firebaseReady) {
-      setSyncStatus(false);
-      loadLocal();
-      initUI();
+    if (!fb.ready) {
+      setSyncStatus(false); loadLocal(); initUI();
     } else {
       setSyncStatus(true);
-
-      // Listeners reactivos en tiempo real con Firebase
-      onSnapshot(collection(db, "appointments"), snap => {
+      fb.onSnapshot(fb.collection(fb.db, "appointments"), snap => {
         appointments = {};
         snap.forEach(d => {
           const data = d.data();
@@ -865,41 +908,34 @@
         Object.values(appointments).forEach(l => l.sort((a,b) => (a.hora||"").localeCompare(b.hora||"")));
         renderCalendar();
         if (selectedDateKey) renderApptList(selectedDateKey);
-      }, err => { console.error(err); setSyncStatus(false); loadLocal(); initUI(); });
+      }, () => { setSyncStatus(false); loadLocal(); initUI(); });
 
-      onSnapshot(collection(db, "atenciones"), snap => {
-        atenciones = [];
-        snap.forEach(d => atenciones.push({ id: d.id, ...d.data() }));
+      fb.onSnapshot(fb.collection(fb.db, "atenciones"), snap => {
+        atenciones = []; snap.forEach(d => atenciones.push({ id: d.id, ...d.data() }));
         atenciones.sort((a,b) => (b.fecha||"").localeCompare(a.fecha||""));
-        renderAtenciones();
-        renderResumen();
-      }, err => { console.error(err); });
+        renderAtenciones(); renderResumen();
+      });
 
-      onSnapshot(collection(db, "inventory"), snap => {
-        inventory = [];
-        snap.forEach(d => inventory.push({ id: d.id, ...d.data() }));
+      fb.onSnapshot(fb.collection(fb.db, "inventory"), snap => {
+        inventory = []; snap.forEach(d => inventory.push({ id: d.id, ...d.data() }));
         inventory.sort((a,b) => a.nombre.localeCompare(b.nombre));
         renderInventory();
-      }, err => { console.error(err); });
+      });
 
-      onSnapshot(collection(db, "historial"), snap => {
-        historial = [];
-        snap.forEach(d => historial.push({ id: d.id, ...d.data() }));
+      fb.onSnapshot(fb.collection(fb.db, "historial"), snap => {
+        historial = []; snap.forEach(d => historial.push({ id: d.id, ...d.data() }));
         historial.sort((a,b) => (b.fecha||"").localeCompare(a.fecha||""));
         renderHistorial();
-      }, err => { console.error(err); });
+      });
 
-      onSnapshot(collection(db, "clientes"), snap => {
-        clientes = [];
-        snap.forEach(d => clientes.push({ id: d.id, ...d.data() }));
+      fb.onSnapshot(fb.collection(fb.db, "clientes"), snap => {
+        clientes = []; snap.forEach(d => clientes.push({ id: d.id, ...d.data() }));
         clientes.sort((a,b) => a.nombre.localeCompare(b.nombre));
         renderClientes();
-      }, err => { console.error(err); });
-
+      });
       initUI();
     }
 
-    // ---------- MANEJO DE VISTAS (TABS) ----------
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -910,38 +946,25 @@
     });
 
     function initUI() {
-      renderCalendar();
-      renderInventory();
-      renderAtenciones();
-      renderResumen();
-      renderHistorial();
-      renderClientes();
+      renderCalendar(); renderInventory(); renderAtenciones(); renderResumen(); renderHistorial(); renderClientes();
       setupStaticEventListeners();
     }
 
-    // ---------- UTILS ----------
     function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
-    function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str||""; return d.innerHTML; }
+    function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s||""; return d.innerHTML; }
     function formatPeso(n) { return "$" + Number(n||0).toLocaleString("es-CL"); }
     function formatDate(iso) {
-      if (!iso) return "";
-      const [y,m,d] = iso.split("-");
-      return `${parseInt(d)} de ${MESES[parseInt(m)-1]} ${y}`;
+      if (!iso) return ""; const [y,m,d] = iso.split("-"); return `${parseInt(d)} de ${MESES[parseInt(m)-1]} ${y}`;
     }
     function formatCumple(iso) {
-      if (!iso) return "No registrado";
-      const [,m,d] = iso.split("-");
-      return `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
+      if (!iso) return "No registrado"; const [,m,d] = iso.split("-"); return `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
     }
 
-    // ---------- SECCIÓN: AGENDA Y CALENDARIO ----------
     function renderCalendar() {
       const y = current.getFullYear(), m = current.getMonth();
       document.getElementById("monthLabel").textContent = `${MESES[m]} ${y}`;
-      const grid = document.getElementById("calGrid");
-      grid.innerHTML = "";
-      const firstDay = new Date(y, m, 1);
-      const startOffset = (firstDay.getDay() + 6) % 7;
+      const grid = document.getElementById("calGrid"); grid.innerHTML = "";
+      const startOffset = (new Date(y, m, 1).getDay() + 6) % 7;
       const daysInMonth = new Date(y, m+1, 0).getDate();
       const today = new Date();
       const todayK = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
@@ -956,16 +979,12 @@
         cell.innerHTML = `<span class="day-num">${d}</span>`;
         const dayAppts = appointments[key] || [];
         dayAppts.slice(0, 2).forEach(a => {
-          const s = document.createElement("div");
-          s.className = "strand";
-          s.innerHTML = `<b>${escapeHtml(a.cliente)}</b> · ${escapeHtml(a.servicio)}`;
-          cell.appendChild(s);
+          const s = document.createElement("div"); s.className = "strand";
+          s.innerHTML = `<b>${escapeHtml(a.cliente)}</b> · ${escapeHtml(a.servicio)}`; cell.appendChild(s);
         });
         if (dayAppts.length > 2) {
-          const more = document.createElement("div");
-          more.className = "strand more";
-          more.textContent = `+${dayAppts.length - 2} más`;
-          cell.appendChild(more);
+          const more = document.createElement("div"); more.className = "strand more";
+          more.textContent = `+${dayAppts.length - 2} más`; cell.appendChild(more);
         }
         cell.addEventListener("click", () => openDayModal(key, y, m, d));
         grid.appendChild(cell);
@@ -975,30 +994,24 @@
     function openDayModal(key, y, m, d) {
       selectedDateKey = key;
       const weekday = new Date(y, m, d).toLocaleDateString("es-ES", { weekday: "long" });
-      const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-      document.getElementById("modalDate").textContent = `${cap} ${d} de ${MESES[m]}`;
-      renderApptList(key);
-      document.getElementById("dayModal").classList.add("show");
+      document.getElementById("modalDate").textContent = `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} ${d} de ${MESES[m]}`;
+      renderApptList(key); document.getElementById("dayModal").classList.add("show");
     }
 
     function renderApptList(key) {
-      const list = document.getElementById("apptList");
-      const empty = document.getElementById("apptEmpty");
-      const count = document.getElementById("modalApptCount");
-      list.innerHTML = "";
-      const dayAppts = (appointments[key] || []).slice().sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
-      count.textContent = dayAppts.length === 0 ? "Sin citas" : `${dayAppts.length} cita${dayAppts.length>1?"s":""}`;
-      empty.style.display = dayAppts.length === 0 ? "block" : "none";
+      const list = document.getElementById("apptList"); list.innerHTML = "";
+      const dayAppts = (appointments[key] || []);
+      document.getElementById("modalApptCount").textContent = dayAppts.length === 0 ? "Sin citas" : `${dayAppts.length} cita${dayAppts.length>1?"s":""}`;
+      document.getElementById("apptEmpty").style.display = dayAppts.length === 0 ? "block" : "none";
       dayAppts.forEach(a => {
-        const card = document.createElement("div");
-        card.className = "appt-card";
+        const card = document.createElement("div"); card.className = "appt-card";
         card.innerHTML = `
           <div class="info">
-            <span class="time">${a.hora||""}</span>
+            <span class="time">${a.hora||"S/H"}</span>
             <b>${escapeHtml(a.cliente)}</b>
-            <span>${escapeHtml(a.servicio)}${a.precioEst ? " · " + formatPeso(a.precioEst) : ""}</span>
+            <span>${escapeHtml(a.servicio)}</span>
           </div>
-          <button class="icon-btn" title="Eliminar cita">✕</button>
+          <button class="icon-btn">✕</button>
         `;
         card.querySelector("button").addEventListener("click", () => deleteAppt(a.id, key));
         list.appendChild(card);
@@ -1006,302 +1019,176 @@
     }
 
     async function deleteAppt(id, key) {
-      if (!confirm("¿Segura que deseas eliminar esta cita?")) return;
-      if (firebaseReady) {
-        try { await deleteDoc(doc(db, "appointments", id)); } catch(e) { console.error(e); }
-      } else {
+      if (!confirm("¿Eliminar cita?")) return;
+      if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "appointments", id)); }
+      else {
         appointments[key] = (appointments[key] || []).filter(a => a.id !== id);
-        saveLocal("salon_appts_v1", appointments);
-        renderCalendar();
-        renderApptList(key);
+        saveLocal("salon_appts_v1", appointments); renderCalendar(); renderApptList(key);
       }
     }
 
     function closeModal() {
       document.getElementById("dayModal").classList.remove("show");
-      document.getElementById("clienteInput").value = "";
-      document.getElementById("servicioInput").value = "";
-      document.getElementById("horaInput").value = "";
-      document.getElementById("precioEstInput").value = "";
+      document.getElementById("clienteInput").value = ""; document.getElementById("servicioInput").value = "";
+      document.getElementById("horaInput").value = ""; document.getElementById("precioEstInput").value = "";
     }
 
-    // ---------- SECCIÓN: ATENCIONES ----------
     function renderAtenciones() {
-      const list = document.getElementById("atencionList");
-      const empty = document.getElementById("atencionEmpty");
-      list.innerHTML = "";
-
+      const list = document.getElementById("atencionList"); list.innerHTML = "";
       const filtro = document.getElementById("filtroCliente").value.toLowerCase().trim();
       const filtradas = atenciones.filter(a => (a.cliente || "").toLowerCase().includes(filtro));
-
-      if (filtradas.length === 0) {
-        empty.style.display = "block";
-        return;
-      }
-      empty.style.display = "none";
-
+      document.getElementById("atencionEmpty").style.display = filtradas.length === 0 ? "block" : "none";
       filtradas.forEach(a => {
-        const card = document.createElement("div");
-        card.className = "atencion-card";
+        const card = document.createElement("div"); card.className = "atencion-card";
         card.innerHTML = `
           <div class="atencion-top">
-            <div>
-              <div class="name">${escapeHtml(a.cliente)}</div>
-              <div class="date">${formatDate(a.fecha)}</div>
-            </div>
+            <div><div class="name">${escapeHtml(a.cliente)}</div><div class="date">${formatDate(a.fecha)}</div></div>
             <div class="atencion-precio">${formatPeso(a.precio)}</div>
           </div>
           <div class="atencion-servicio"><b>Servicio:</b> ${escapeHtml(a.servicio)}</div>
-          ${a.notas ? `<div class="atencion-servicio" style="font-style: italic; font-size: 12.5px;"><b>Notas:</b> ${escapeHtml(a.notas)}</div>` : ''}
-          <div class="productos-chips">
-            ${(a.productos || []).map(p => `<span class="chip">${escapeHtml(p.nombre)} (${p.cantidad} ${p.unidad||'g'})</span>`).join('')}
-          </div>
+          ${a.notas ? `<div class="atencion-servicio" style="font-style: italic; font-size:12.5px;"><b>Notas:</b> ${escapeHtml(a.notas)}</div>`:''}
+          <div class="productos-chips">${(a.productos || []).map(p => `<span class="chip">${escapeHtml(p.nombre)} (${p.cantidad}${p.unidad||'g'})</span>`).join('')}</div>
           <div class="atencion-actions">
-            <span class="chip" style="background:transparent; border-color:transparent; text-transform: capitalize; font-weight:normal;">💳 ${a.metodoPago || 'efectivo'}</span>
-            <button class="btn-historial-cliente">📋 Ver Historial</button>
+            <span class="chip" style="background:transparent; border-color:transparent; text-transform:capitalize;">💳 ${a.metodoPago||'efectivo'}</span>
+            <button class="btn btn-ghost btn-sm">📋 Historial</button>
           </div>
         `;
-        // Contexto asilado para abrir el modal de historial por cliente de manera segura
-        card.querySelector(".btn-historial-cliente").addEventListener("click", () => {
-          openClienteHistorialModal(a.cliente);
-        });
+        card.querySelector("button").addEventListener("click", () => openClienteHistorialModal(a.cliente));
         list.appendChild(card);
       });
     }
 
     function renderResumen() {
-      let totalM = 0, countM = 0;
-      let totalS = 0, countS = 0;
-      let totalH = 0, countH = atenciones.length;
-
-      const ahora = new Date();
-      const esteMesStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
-      
+      let totalM = 0, countM = 0, totalS = 0, countS = 0, totalH = 0;
+      const ahora = new Date(), esteMesStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
       const primerDiaSemana = new Date(ahora);
-      const dif = ahora.getDay() === 0 ? -6 : 1 - ahora.getDay();
-      primerDiaSemana.setDate(ahora.getDate() + dif);
+      primerDiaSemana.setDate(ahora.getDate() + (ahora.getDay() === 0 ? -6 : 1 - ahora.getDay()));
       primerDiaSemana.setHours(0,0,0,0);
 
       atenciones.forEach(a => {
-        const precio = parseFloat(a.precio || 0);
-        totalH += precio;
-        if (a.fecha && a.fecha.startsWith(esteMesStr)) { totalM += precio; countM++; }
-        if (a.fecha) {
-          const fA = new Date(a.fecha + "T00:00:00");
-          if (fA >= primerDiaSemana) { totalS += precio; countS++; }
-        }
+        const p = parseFloat(a.precio || 0); totalH += p;
+        if (a.fecha && a.fecha.startsWith(esteMesStr)) { totalM += p; countM++; }
+        if (a.fecha && new Date(a.fecha + "T00:00:00") >= primerDiaSemana) { totalS += p; countS++; }
       });
-
       document.getElementById("totalMes").textContent = formatPeso(totalM);
-      document.getElementById("countMes").textContent = `${countM} atención${countM!==1?'es':''}`;
+      document.getElementById("countMes").textContent = `${countM} registro${countM!==1?'s':''}`;
       document.getElementById("totalSemana").textContent = formatPeso(totalS);
-      document.getElementById("countSemana").textContent = `${countS} atención${countS!==1?'es':''}`;
+      document.getElementById("countSemana").textContent = `${countS} registro${countS!==1?'s':''}`;
       document.getElementById("totalHistorico").textContent = formatPeso(totalH);
-      document.getElementById("countTotal").textContent = `${countH} atención${countH!==1?'es':''}`;
+      document.getElementById("countTotal").textContent = `${atenciones.length} registro${atenciones.length!==1?'s':''}`;
     }
 
-    // ---------- SECCIÓN: FICHAS TÉCNICAS ----------
     function renderClientes() {
-      const grid = document.getElementById("clientesGridList");
-      const empty = document.getElementById("clientesEmpty");
-      grid.innerHTML = "";
-
+      const grid = document.getElementById("clientesGridList"); grid.innerHTML = "";
       const filtro = document.getElementById("filtroBaseClientes").value.toLowerCase().trim();
       const filtrados = clientes.filter(c => (c.nombre || "").toLowerCase().includes(filtro));
-
-      if (filtrados.length === 0) {
-        empty.style.display = "block";
-        return;
-      }
-      empty.style.display = "none";
-
+      document.getElementById("clientesEmpty").style.display = filtrados.length === 0 ? "block" : "none";
       filtrados.forEach(c => {
-        const card = document.createElement("div");
-        card.className = "cliente-card";
+        const card = document.createElement("div"); card.className = "cliente-card";
         card.innerHTML = `
           <div>
-            <div class="cliente-card-header">
-              <h4 style="font-size:15px;">${escapeHtml(c.nombre)}</h4>
-              <button class="icon-btn btn-del-cliente" title="Eliminar Ficha">✕</button>
-            </div>
+            <div class="cliente-card-header"><h4 style="font-size:15px;">${escapeHtml(c.nombre)}</h4><button class="icon-btn">✕</button></div>
             <div class="cliente-detalles">
               <span>📞 <b>Teléfono:</b> ${escapeHtml(c.telefono || 'No registrado')}</span>
               <span>✉️ <b>Correo:</b> ${escapeHtml(c.correo || 'No registrado')}</span>
               <span>🎂 <b>Cumpleaños:</b> ${formatCumple(c.cumple)}</span>
             </div>
-            ${c.preferencias ? `<div class="cliente-pref"><b>Preferencias/Fórmulas:</b> ${escapeHtml(c.preferencias)}</div>` : ''}
+            ${c.preferencias ? `<div class="cliente-pref"><b>Notas Técnicas:</b> ${escapeHtml(c.preferencias)}</div>`:''}
           </div>
-          <div style="margin-top:12px;">
-            <button class="btn btn-ghost btn-sm btn-historial-desde-ficha" style="width:100%; border: 1px solid var(--line);">📋 Ver Historial Completo</button>
-          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:10px;">📋 Historial Clínico</button>
         `;
-        card.querySelector(".btn-historial-desde-ficha").addEventListener("click", () => openClienteHistorialModal(c.nombre));
-        card.querySelector(".btn-del-cliente").addEventListener("click", () => deleteCliente(c));
+        card.querySelector(".btn-ghost").addEventListener("click", () => openClienteHistorialModal(c.nombre));
+        card.querySelector(".icon-btn").addEventListener("click", () => deleteCliente(c));
         grid.appendChild(card);
       });
     }
 
     async function deleteCliente(c) {
-      if (!confirm(`¿Eliminar definitivamente la ficha técnica de "${c.nombre}"?`)) return;
-      if (firebaseReady) {
-        try { await deleteDoc(doc(db, "clientes", c.id)); } catch(e) { console.error(e); }
-      } else {
-        clientes = clientes.filter(i => i.id !== c.id);
-        saveLocal("salon_clientes_v1", clientes);
-        renderClientes();
-      }
+      if (!confirm(`¿Eliminar ficha de ${c.nombre}?`)) return;
+      if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "clientes", c.id)); }
+      else { clientes = clientes.filter(i => i.id !== c.id); saveLocal("salon_clientes_v1", clientes); renderClientes(); }
     }
 
-    // ---------- HISTORIAL FILTRADO DE CLIENTAS ----------
-    function openClienteHistorialModal(nombreCliente) {
-      if (!nombreCliente) return;
-      const filtradas = atenciones.filter(a => a.cliente && a.cliente.trim().toLowerCase() === nombreCliente.trim().toLowerCase());
-      document.getElementById("histNombreCliente").textContent = `Historial: ${nombreCliente}`;
+    function openClienteHistorialModal(nombre) {
+      if (!nombre) return;
+      const filtradas = atenciones.filter(a => a.cliente && a.cliente.trim().toLowerCase() === nombre.trim().toLowerCase());
+      document.getElementById("histNombreCliente").textContent = `Historial: ${nombre}`;
+      const lista = document.getElementById("historialAtencionesClienteList"); lista.innerHTML = "";
       
-      const totalPagadoElem = document.getElementById("histTotalPagado");
-      const totalVisitasElem = document.getElementById("histTotalVisitas");
-      const ultimaFechaElem = document.getElementById("histUltimaFecha");
-      const listaHistorial = document.getElementById("historialAtencionesClienteList");
-      listaHistorial.innerHTML = "";
+      let totalDinero = 0; filtradas.forEach(a => totalDinero += parseFloat(a.precio || 0));
+      document.getElementById("histTotalPagado").textContent = formatPeso(totalDinero);
+      document.getElementById("histTotalVisitas").textContent = filtradas.length;
+      document.getElementById("histUltimaFecha").textContent = filtradas.length > 0 ? formatDate(filtradas[0].fecha) : "—";
 
-      if (filtradas.length === 0) {
-        totalPagadoElem.textContent = formatPeso(0);
-        totalVisitasElem.textContent = "0";
-        ultimaFechaElem.textContent = "—";
-        listaHistorial.innerHTML = `<div style="font-style:italic; text-align:center; padding:20px; color:var(--ink-soft); font-size:13px;">No hay atenciones registradas aún para esta clienta.</div>`;
-        document.getElementById("clienteHistorialModal").classList.add("show");
-        return;
+      if(filtradas.length === 0) {
+        lista.innerHTML = `<div style="font-style:italic; text-align:center; padding:20px; color:var(--ink-soft); font-size:13px;">Sin visitas.</div>`;
+      } else {
+        filtradas.forEach(a => {
+          const item = document.createElement("div"); item.className = "hist-atencion-item";
+          item.innerHTML = `
+            <div class="hist-atencion-meta"><span>📅 ${formatDate(a.fecha)}</span><span style="color:var(--copper); font-weight:700;">${formatPeso(a.precio)}</span></div>
+            <div style="font-size:13.5px; margin-bottom:4px;"><b>Servicio:</b> ${escapeHtml(a.servicio)}</div>
+            ${a.notas ? `<div style="font-size:12px; color:var(--ink-soft); font-style:italic; background:var(--cream); padding:4px 6px; border-radius:4px;">${escapeHtml(a.notas)}</div>`:''}
+          `;
+          lista.appendChild(item);
+        });
       }
-
-      let totalDinero = 0;
-      filtradas.forEach(a => totalDinero += parseFloat(a.precio || 0));
-      totalPagadoElem.textContent = formatPeso(totalDinero);
-      totalVisitasElem.textContent = filtradas.length;
-      ultimaFechaElem.textContent = formatDate(filtradas[0].fecha);
-
-      filtradas.forEach(a => {
-        const item = document.createElement("div");
-        item.className = "hist-atencion-item";
-        let prodsHtml = "";
-        if (a.productos && a.productos.length > 0) {
-          prodsHtml = `
-            <div style="margin-top: 6px;">
-              <span style="font-size: 11.5px; font-weight: 700; color: var(--ink-soft);">Insumos usados:</span>
-              <div class="productos-chips" style="margin-top: 2px;">
-                ${a.productos.map(p => `<span class="chip" style="font-size: 10.5px; padding:2px 6px;">${escapeHtml(p.nombre)} (${p.cantidad} ${p.unidad||'g'})</span>`).join('')}
-              </div>
-            </div>`;
-        }
-        item.innerHTML = `
-          <div class="hist-atencion-meta">
-            <span>📅 ${formatDate(a.fecha)}</span>
-            <span style="text-transform: uppercase; font-weight:700; color:var(--copper);">${formatPeso(a.precio)}</span>
-          </div>
-          <div style="font-size: 13.5px; margin-bottom: 4px;"><b>Servicio:</b> ${escapeHtml(a.servicio)}</div>
-          ${a.notes || a.notas ? `<div style="font-size: 12.5px; color: var(--ink-soft); font-style: italic; background: var(--cream); padding: 4px 8px; border-radius: 4px; margin-top: 4px;"><b>Nota:</b> ${escapeHtml(a.notas || a.notes)}</div>` : ''}
-          ${prodsHtml}
-          <div style="font-size: 11px; color: var(--ink-soft); text-align: right; margin-top: 6px; font-weight: 500;">Pago: ${escapeHtml(a.metodoPago || 'efectivo')}</div>
-        `;
-        listaHistorial.appendChild(item);
-      });
       document.getElementById("clienteHistorialModal").classList.add("show");
     }
 
-    // ---------- SECCIÓN: INVENTARIO DE INSUMOS ----------
     function renderInventory() {
       const table = document.getElementById("invTable");
-      const empty = document.getElementById("invEmpty");
       table.querySelectorAll(".inv-row:not(.head)").forEach(r => r.remove());
-
-      if (inventory.length === 0) { empty.style.display = "block"; return; }
-      empty.style.display = "none";
-
+      document.getElementById("invEmpty").style.display = inventory.length === 0 ? "block" : "none";
       inventory.forEach(item => {
-        const row = document.createElement("div");
-        row.className = "inv-row";
-        const un = escapeHtml(item.unidad || 'g');
-        const totalUsado = parseFloat(item.totalUsado || 0);
-        const stockActual = parseFloat(item.cantidad || 0);
-        const loQueSeTenia = stockActual + totalUsado;
-        const esBajo = stockActual <= 5;
-
+        const row = document.createElement("div"); row.className = "inv-row";
+        const un = escapeHtml(item.unidad || 'g'), stock = parseFloat(item.cantidad || 0), deBaja = stock <= 5;
         row.innerHTML = `
-          <div class="inv-cell-left">
-            <span class="inv-name">${escapeHtml(item.nombre)}</span>
-            <span class="inv-unidad">Métrica: ${un}</span>
-          </div>
-          <div style="font-size:14px; font-weight:500; color: var(--ink-soft);">${loQueSeTenia} ${un}</div>
-          <div style="font-size:14px; font-weight:600; color: var(--copper);">${totalUsado} ${un}</div>
-          <div class="qty-controls">
-            <button class="btn-minus">−</button>
-            <span class="qty-val ${esBajo?'low':''}">${stockActual} ${un}</span>
-            <button class="btn-plus">+</button>
-          </div>
-          <div><span class="stock-tag ${esBajo?'low':'ok'}">${esBajo?'Crítico':'Saludable'}</span></div>
-          <button class="icon-btn btn-del-inv" title="Eliminar insumo">✕</button>
+          <div class="inv-cell-left"><span class="inv-name">${escapeHtml(item.nombre)}</span><span class="inv-unidad">Unidad: ${un}</span></div>
+          <div style="font-size:13.5px; color:var(--ink-soft);">Base: ${stock + parseFloat(item.totalUsado||0)} ${un}</div>
+          <div style="font-size:13.5px; color:var(--copper); font-weight:600;">-${item.totalUsado||0} ${un}</div>
+          <div class="qty-controls"><button class="m">-</button><span class="qty-val ${deBaja?'low':''}">${stock} ${un}</span><button class="p">+</button></div>
+          <div><span class="stock-tag ${deBaja?'low':'ok'}">${deBaja?'Bajo':'OK'}</span></div>
+          <button class="icon-btn btn-del-inv">✕</button>
         `;
-        row.querySelector(".btn-minus").addEventListener("click", () => updateQty(item, -10));
-        row.querySelector(".btn-plus").addEventListener("click", () => updateQty(item, 10));
+        row.querySelector(".m").addEventListener("click", () => updateQty(item, -10));
+        row.querySelector(".p").addEventListener("click", () => updateQty(item, 10));
         row.querySelector(".btn-del-inv").addEventListener("click", () => deleteItem(item));
         table.appendChild(row);
       });
     }
 
-    async function updateQty(item, delta) {
-      const nuevaCant = Math.max(0, parseFloat(item.cantidad || 0) + delta);
-      if (firebaseReady) { 
-        try { await setDoc(doc(db, "inventory", item.id), { cantidad: nuevaCant }, { merge: true }); } catch(e) { console.error(e); }
-      } else { 
-        item.cantidad = nuevaCant; saveLocal("salon_inv_v1", inventory); renderInventory(); 
-      }
+    async function updateQty(item, d) {
+      const n = Math.max(0, parseFloat(item.cantidad || 0) + d);
+      if (fb.ready) { await fb.setDoc(fb.doc(fb.db, "inventory", item.id), { cantidad: n }, { merge: true }); }
+      else { item.cantidad = n; saveLocal("salon_inv_v1", inventory); renderInventory(); }
     }
 
     async function deleteItem(item) {
-      if (!confirm(`¿Eliminar "${item.nombre}" del inventario?`)) return;
-      if (firebaseReady) { 
-        try { await deleteDoc(doc(db, "inventory", item.id)); } catch(e) { console.error(e); }
-      } else { 
-        inventory = inventory.filter(i => i.id !== item.id); saveLocal("salon_inv_v1", inventory); renderInventory(); 
-      }
+      if (!confirm(`¿Eliminar ${item.nombre}?`)) return;
+      if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "inventory", item.id)); }
+      else { inventory = inventory.filter(i => i.id !== item.id); saveLocal("salon_inv_v1", inventory); renderInventory(); }
     }
 
     function renderHistorial() {
-      const sec = document.getElementById("historialSection");
-      const list = document.getElementById("historialList");
-      list.innerHTML = "";
-      if (historial.length === 0) { sec.style.display = "none"; return; }
-      sec.style.display = "block";
-      historial.slice(0, 30).forEach(h => {
-        const row = document.createElement("div");
-        row.className = "hist-row";
-        row.innerHTML = `
-          <div>
-            <div class="h-name">${escapeHtml(h.nombre)}</div>
-            <div class="h-detail">Clienta: ${escapeHtml(h.cliente)} · Servicio: ${escapeHtml(h.servicio)}</div>
-          </div>
-          <div class="h-delta">−${h.cantidad} ${h.unidad||"g"}</div>
-          <div class="h-date">${formatDate(h.fecha)}</div>
-        `;
+      const sec = document.getElementById("historialSection"); const list = document.getElementById("historialList");
+      list.innerHTML = ""; sec.style.display = historial.length === 0 ? "none" : "block";
+      historial.slice(0, 20).forEach(h => {
+        const row = document.createElement("div"); row.className = "hist-row";
+        row.innerHTML = `<div><div class="h-name">${escapeHtml(h.nombre)}</div><div class="h-detail">Para: ${escapeHtml(h.cliente)}</div></div>
+                         <div class="h-delta">-${h.cantidad} ${h.unidad||"g"}</div><div class="h-date">${formatDate(h.fecha)}</div>`;
         list.appendChild(row);
       });
     }
 
     function agregarFilaProducto() {
-      const contenedor = document.getElementById("prodUsedList");
-      const row = document.createElement("div");
-      row.className = "prod-used-row";
-      let opciones = `<option value="">-- Seleccionar insumo --</option>`;
-      inventory.forEach(p => { opciones += `<option value="${p.id}">${escapeHtml(p.nombre)} (Quedan: ${p.cantidad} ${p.unidad||'g'})</option>`; });
-      row.innerHTML = `
-        <select class="select-prod" style="padding:6px 8px; font-size:13px;">${opciones}</select>
-        <input type="number" class="input-cant-prod" placeholder="Cant." min="0" step="0.1" style="padding:6px 8px; font-size:13px;">
-        <button class="icon-btn btn-remove-prod-row" title="Quitar">✕</button>
-      `;
-      row.querySelector(".btn-remove-prod-row").addEventListener("click", () => row.remove());
-      contenedor.appendChild(row);
+      const c = document.getElementById("prodUsedList"); const r = document.createElement("div"); r.className = "prod-used-row";
+      let ops = `<option value="">-- Seleccionar --</option>`;
+      inventory.forEach(p => { ops += `<option value="${p.id}">${escapeHtml(p.nombre)} (${p.cantidad}${p.unidad||'g'})</option>`; });
+      r.innerHTML = `<select>${ops}</select><input type="number" placeholder="Cant." min="0" step="0.1"><button class="icon-btn">✕</button>`;
+      r.querySelector("button").addEventListener("click", () => r.remove()); c.appendChild(r);
     }
 
-    // ---------- ASIGNACIÓN DE EVENT LISTENERS PRINCIPALES ----------
     function setupStaticEventListeners() {
       document.getElementById("prevBtn").addEventListener("click", () => { current.setMonth(current.getMonth()-1); renderCalendar(); });
       document.getElementById("nextBtn").addEventListener("click", () => { current.setMonth(current.getMonth()+1); renderCalendar(); });
@@ -1310,132 +1197,94 @@
       document.getElementById("closeHistorialBtn").addEventListener("click", () => document.getElementById("clienteHistorialModal").classList.remove("show"));
 
       document.getElementById("btnAgendarCita").addEventListener("click", async () => {
-        const cliente = document.getElementById("clienteInput").value.trim();
-        const servicio = document.getElementById("servicioInput").value.trim();
-        const hora = document.getElementById("horaInput").value;
-        const precioEst = parseFloat(document.getElementById("precioEstInput").value) || 0;
-        if (!cliente || !servicio) { alert("Nombre de clienta y Servicio son requeridos."); return; }
-        const nuevaCita = { dateKey: selectedDateKey, cliente, servicio, hora, precioEst };
-
-        if (firebaseReady) { 
-          try { await addDoc(collection(db, "appointments"), nuevaCita); } catch(e) { console.error(e); }
-        } else {
+        const cliente = document.getElementById("clienteInput").value.trim(), servicio = document.getElementById("servicioInput").value.trim();
+        const hora = document.getElementById("horaInput").value, precioEst = parseFloat(document.getElementById("precioEstInput").value) || 0;
+        if (!cliente || !servicio) { alert("Nombre y Servicio obligatorios"); return; }
+        const n = { dateKey: selectedDateKey, cliente, servicio, hora, precioEst };
+        if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "appointments"), n); }
+        else {
           if (!appointments[selectedDateKey]) appointments[selectedDateKey] = [];
-          appointments[selectedDateKey].push({ id: "local_" + Date.now(), ...nuevaCita });
+          appointments[selectedDateKey].push({ id: "l_" + Date.now(), ...n });
           saveLocal("salon_appts_v1", appointments); renderCalendar(); renderApptList(selectedDateKey);
         }
         closeModal();
       });
 
-      // Modales Atenciones Diario
       document.getElementById("btnNuevaAtencion").addEventListener("click", () => {
         document.getElementById("aFechaInput").value = new Date().toISOString().split('T')[0];
-        document.getElementById("prodUsedList").innerHTML = "";
-        document.getElementById("atencionModal").classList.add("show");
+        document.getElementById("prodUsedList").innerHTML = ""; document.getElementById("atencionModal").classList.add("show");
       });
-      const closeAtencion = () => {
+      const closeAt = () => {
         document.getElementById("atencionModal").classList.remove("show");
         document.getElementById("aClienteInput").value = ""; document.getElementById("aServicioInput").value = "";
         document.getElementById("aPrecioInput").value = ""; document.getElementById("aNotasInput").value = "";
       };
-      document.getElementById("closeAtencionBtn").addEventListener("click", closeAtencion);
+      document.getElementById("closeAtencionBtn").addEventListener("click", closeAt);
       document.getElementById("btnAddProd").addEventListener("click", agregarFilaProducto);
 
       document.getElementById("btnGuardarAtencion").addEventListener("click", async () => {
-        const cliente = document.getElementById("aClienteInput").value.trim();
-        const fecha = document.getElementById("aFechaInput").value;
-        const servicio = document.getElementById("aServicioInput").value.trim();
-        const precio = parseFloat(document.getElementById("aPrecioInput").value) || 0;
-        const metodoPago = document.getElementById("aMetodoPagoInput").value;
-        const notas = document.getElementById("aNotasInput").value.trim();
-
-        if (!cliente || !servicio || !fecha) { alert("Campos obligatorios incompletos."); return; }
+        const cliente = document.getElementById("aClienteInput").value.trim(), fecha = document.getElementById("aFechaInput").value;
+        const servicio = document.getElementById("aServicioInput").value.trim(), precio = parseFloat(document.getElementById("aPrecioInput").value) || 0;
+        const metodoPago = document.getElementById("aMetodoPagoInput").value, notas = document.getElementById("aNotasInput").value.trim();
+        if (!cliente || !servicio || !fecha) { alert("Complete los campos obligatorios"); return; }
 
         const listaProds = [];
         for (let fila of document.querySelectorAll(".prod-used-row")) {
-          const prodId = fila.querySelector(".select-prod").value;
-          const cant = parseFloat(fila.querySelector(".input-cant-prod").value) || 0;
-          if (prodId && cant > 0) {
-            const itemInv = inventory.find(i => i.id === prodId);
-            if (itemInv) {
-              listaProds.push({ id: prodId, nombre: itemInv.nombre, cantidad: cant, unidad: itemInv.unidad || "g" });
-              const nuevoStock = Math.max(0, parseFloat(itemInv.cantidad || 0) - cant);
-              const nuevoHistoricoUsado = parseFloat(itemInv.totalUsado || 0) + cant;
-              
-              if (firebaseReady) {
-                try {
-                  await setDoc(doc(db, "inventory", prodId), { cantidad: nuevoStock, totalUsado: nuevoHistoricoUsado }, { merge: true });
-                  await addDoc(collection(db, "historial"), { nombre: itemInv.nombre, cliente, servicio, cantidad: cant, unidad: itemInv.unidad||"g", fecha });
-                } catch(e) { console.error(e); }
+          const pId = fila.querySelector("select").value, cant = parseFloat(fila.querySelector("input").value) || 0;
+          if (pId && cant > 0) {
+            const item = inventory.find(i => i.id === pId);
+            if (item) {
+              listaProds.push({ id: pId, nombre: item.nombre, cantidad: cant, unidad: item.unidad || "g" });
+              const nStock = Math.max(0, parseFloat(item.cantidad || 0) - cant), nHist = parseFloat(item.totalUsado || 0) + cant;
+              if (fb.ready) {
+                await fb.setDoc(fb.doc(fb.db, "inventory", pId), { cantidad: nStock, totalUsado: nHist }, { merge: true });
+                await fb.addDoc(fb.collection(fb.db, "historial"), { nombre: item.nombre, cliente, servicio, cantidad: cant, unidad: item.unidad||"g", fecha });
               } else {
-                itemInv.cantidad = nuevoStock; itemInv.totalUsado = nuevoHistoricoUsado;
-                historial.push({ nombre: itemInv.nombre, cliente, servicio, cantidad: cant, unidad: itemInv.unidad||"g", fecha });
+                item.cantidad = nStock; item.totalUsado = nHist;
+                historial.push({ nombre: item.nombre, cliente, servicio, cantidad: cant, unidad: item.unidad||"g", fecha });
               }
             }
           }
         }
 
-        const nuevaAtencion = { cliente, fecha, servicio, precio, metodoPago, notas, productos: listaProds };
-        if (firebaseReady) { 
-          try { await addDoc(collection(db, "atenciones"), nuevaAtencion); } catch(e) { console.error(e); }
-        } else {
-          atenciones.unshift({ id: "local_" + Date.now(), ...nuevaAtencion });
-          saveLocal("salon_atenciones_v1", atenciones); 
-          saveLocal("salon_inv_v1", inventory); 
-          saveLocal("salon_hist_v1", historial);
+        const nAt = { cliente, fecha, servicio, precio, metodoPago, notas, productos: listaProds };
+        if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "atenciones"), nAt); }
+        else {
+          atenciones.unshift({ id: "l_" + Date.now(), ...nAt }); saveLocal("salon_atenciones_v1", atenciones);
+          saveLocal("salon_inv_v1", inventory); saveLocal("salon_hist_v1", historial);
           renderAtenciones(); renderResumen(); renderInventory(); renderHistorial();
         }
-        closeAtencion();
+        closeAt();
       });
 
-      // Modales Ficha Técnica Cliente
-      document.getElementById("btnNuevoCliente").addEventListener("click", () => {
-        document.getElementById("clienteModal").classList.add("show");
-      });
-      const closeCliente = () => {
+      document.getElementById("btnNuevoCliente").addEventListener("click", () => document.getElementById("clienteModal").classList.add("show"));
+      const closeCl = () => {
         document.getElementById("clienteModal").classList.remove("show");
         document.getElementById("cNombreInput").value = ""; document.getElementById("cTelefonoInput").value = "";
         document.getElementById("cCumpleInput").value = ""; document.getElementById("cCorreoInput").value = "";
         document.getElementById("cPreferenciasInput").value = "";
       };
-      document.getElementById("closeClienteBtn").addEventListener("click", closeCliente);
-      
+      document.getElementById("closeClienteBtn").addEventListener("click", closeCl);
+
       document.getElementById("btnGuardarCliente").addEventListener("click", async () => {
-        const nombre = document.getElementById("cNombreInput").value.trim();
-        const telefono = document.getElementById("cTelefonoInput").value.trim();
-        const cumple = document.getElementById("cCumpleInput").value;
-        const correo = document.getElementById("cCorreoInput").value.trim();
+        const nombre = document.getElementById("cNombreInput").value.trim(), telefono = document.getElementById("cTelefonoInput").value.trim();
+        const cumple = document.getElementById("cCumpleInput").value, correo = document.getElementById("cCorreoInput").value.trim();
         const preferencias = document.getElementById("cPreferenciasInput").value.trim();
-
-        if (!nombre) { alert("El nombre es requerido para procesar el alta."); return; }
-        const nuevoCliente = { nombre, telefono, cumple, correo, preferencias };
-
-        if (firebaseReady) { 
-          try { await addDoc(collection(db, "clientes"), nuevoCliente); } catch(e) { console.error(e); }
-        } else {
-          clientes.push({ id: "local_" + Date.now(), ...nuevoCliente });
-          saveLocal("salon_clientes_v1", clientes); renderClientes();
-        }
-        closeCliente();
+        if (!nombre) { alert("El nombre es obligatorio"); return; }
+        const nCl = { nombre, telefono, cumple, correo, preferencias };
+        if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "clientes"), nCl); }
+        else { clientes.push({ id: "l_" + Date.now(), ...nCl }); saveLocal("salon_clientes_v1", clientes); renderClientes(); }
+        closeCl();
       });
 
-      // Buscadores/Filtros reactivos
       document.getElementById("filtroCliente").addEventListener("input", renderAtenciones);
       document.getElementById("filtroBaseClientes").addEventListener("input", renderClientes);
 
-      // Carga directa en el módulo de Inventario
       document.getElementById("invAddBtn").addEventListener("click", async () => {
-        const nombre = document.getElementById("invNameInput").value.trim();
-        const cantidad = parseFloat(document.getElementById("invQtyInput").value) || 0;
-        const unidad = document.getElementById("invUnitInput").value.trim() || "g";
-        if (!nombre) return;
-        
-        if (firebaseReady) { 
-          try { await addDoc(collection(db, "inventory"), { nombre, cantidad, unidad, totalUsado: 0 }); } catch(e) { console.error(e); }
-        } else {
-          inventory.push({ id: "local_"+Date.now(), nombre, cantidad, unidad, totalUsado: 0 });
-          saveLocal("salon_inv_v1", inventory); renderInventory();
-        }
+        const nombre = document.getElementById("invNameInput").value.trim(), cantidad = parseFloat(document.getElementById("invQtyInput").value) || 0;
+        const unidad = document.getElementById("invUnitInput").value.trim() || "g"; if (!nombre) return;
+        if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "inventory"), { nombre, cantidad, unidad, totalUsado: 0 }); }
+        else { inventory.push({ id: "l_"+Date.now(), nombre, cantidad, unidad, totalUsado: 0 }); saveLocal("salon_inv_v1", inventory); renderInventory(); }
         document.getElementById("invNameInput").value = ""; document.getElementById("invQtyInput").value = ""; document.getElementById("invUnitInput").value = "g";
       });
     }
