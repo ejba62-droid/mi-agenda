@@ -3,32 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agenda · Salón</title>
+<title>Agenda · Salón Margaret</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- ============================================================ -->
-<!-- CONFIGURACIÓN DE FIREBASE — EDUARDO, LEE ESTO                -->
-<!-- ============================================================ -->
-<!-- 1. Ve a https://console.firebase.google.com                  -->
-<!-- 2. Crea un proyecto nuevo (gratis)                            -->
-<!-- 3. Dentro del proyecto, ve a "Firestore Database" y créala    -->
-<!--    en modo de producción (luego configuramos las reglas)     -->
-<!-- 4. Ve a Configuración del proyecto (ícono de engranaje) >     -->
-<!--    "Tus apps" > ícono "</>" (Web) > registra la app           -->
-<!-- 5. Copia el objeto firebaseConfig que te entrega y REEMPLAZA  -->
-<!--    el de abajo (busca "PEGA_TU_CONFIG_AQUI")                  -->
-<!-- ============================================================ -->
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, doc, setDoc, deleteDoc,
-    onSnapshot, query, orderBy
+    getFirestore, collection, doc, setDoc, deleteDoc, addDoc,
+    onSnapshot, query, orderBy, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // PEGA_TU_CONFIG_AQUI — reemplaza este objeto con el que te da Firebase
+  // CONFIGURACIÓN DE FIREBASE
   const firebaseConfig = {
     apiKey: "AIzaSyAi9Qs-oH-emW4w0Rf2KXi6bNQQ0V1JD3Q",
     authDomain: "salon-margaret.firebaseapp.com",
@@ -40,498 +27,332 @@
 
   let app, db;
   let firebaseReady = false;
-
   try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     firebaseReady = true;
   } catch (e) {
-    console.error("Firebase no configurado todavía:", e);
+    console.error("Firebase error:", e);
   }
 
-  window.__firebase = {
-    ready: firebaseReady,
-    db, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy
-  };
+  window.__firebase = { ready: firebaseReady, db, collection, doc, setDoc, deleteDoc, addDoc, onSnapshot, query, orderBy, getDocs };
 </script>
 
 <style>
-  :root {
-    --cream: #FAF6F1;
-    --cream-deep: #F1E9DF;
-    --ink: #2A2522;
-    --ink-soft: #5C5450;
-    --copper: #B8553D;
-    --copper-deep: #9A4530;
-    --sage: #8A9580;
-    --gold: #C9A961;
-    --line: #E3D9CC;
-    --white: #FFFFFF;
-    --shadow: 0 2px 8px rgba(42,37,34,0.06);
-    --shadow-lift: 0 8px 24px rgba(42,37,34,0.12);
-    --radius: 14px;
-  }
+:root {
+  --cream: #FAF6F1;
+  --cream-deep: #F1E9DF;
+  --ink: #2A2522;
+  --ink-soft: #5C5450;
+  --copper: #B8553D;
+  --copper-deep: #9A4530;
+  --sage: #8A9580;
+  --gold: #C9A961;
+  --line: #E3D9CC;
+  --white: #FFFFFF;
+  --shadow: 0 2px 8px rgba(42,37,34,0.06);
+  --shadow-lift: 0 8px 32px rgba(42,37,34,0.14);
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
 
-  * { box-sizing: border-box; }
+.app { max-width: 1140px; margin: 0 auto; padding: 28px 20px 80px; min-height: 100vh; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
+/* HEADER */
+header.top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 28px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand .mark { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 14px; color: var(--copper); }
+.brand h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.01em; }
+.sync-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--ink-soft);
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: 100px; padding: 6px 13px 6px 10px;
+}
+.sync-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); }
+.sync-pill.offline .dot { background: var(--copper); }
+.sync-pill.offline { color: var(--copper-deep); }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.001ms !important;
-      transition-duration: 0.001ms !important;
-    }
-  }
+/* TABS */
+.tabs { display: flex; gap: 0; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+.tab {
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+  color: var(--ink-soft); background: none; border: none;
+  padding: 10px 0; margin-right: 28px; cursor: pointer;
+  position: relative; transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.tab.active { color: var(--ink); }
+.tab::after {
+  content: ''; position: absolute; left: 0; bottom: -1px;
+  width: 100%; height: 2px; background: var(--copper);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease;
+}
+.tab.active::after { transform: scaleX(1); }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
-  .app {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 28px 20px 80px;
-    min-height: 100vh;
-  }
+/* ===== AGENDA ===== */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.cal-nav .month-label { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; text-transform: capitalize; }
+.nav-btns { display: flex; gap: 8px; }
+.nav-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--white); cursor: pointer; font-size: 16px; color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+}
+.nav-btn:hover { background: var(--cream-deep); transform: translateY(-1px); }
+.nav-btn.today-btn { width: auto; border-radius: 100px; padding: 0 16px; font-size: 13px; font-weight: 600; font-family: 'Inter'; }
 
-  /* ---------- HEADER ---------- */
-  header.top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-  }
+.weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
+.weekday-row span { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); text-align: center; padding-bottom: 4px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 
-  .brand {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
+.day-cell {
+  background: var(--white); border: 1px solid var(--line); border-radius: 10px;
+  min-height: 96px; padding: 8px; cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+}
+.day-cell:hover { border-color: var(--copper); box-shadow: var(--shadow); }
+.day-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+.day-cell.empty:hover { border-color: transparent; box-shadow: none; }
+.day-cell.is-today { border-color: var(--copper); border-width: 2px; }
+.day-num { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.day-cell.is-today .day-num { color: var(--copper); }
+.strand {
+  font-size: 11px; background: var(--cream-deep); border-left: 3px solid var(--copper);
+  border-radius: 4px; padding: 3px 6px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; line-height: 1.4;
+}
+.strand b { font-weight: 600; }
+.strand.more { border-left-color: var(--gold); color: var(--ink-soft); background: transparent; font-weight: 600; }
 
-  .brand .mark {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--copper);
-    letter-spacing: 0.02em;
-  }
+/* ===== MODAL ===== */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(42,37,34,0.45); backdrop-filter: blur(2px);
+  align-items: center; justify-content: center; padding: 20px; z-index: 200;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--cream); border-radius: var(--radius);
+  width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto;
+  box-shadow: var(--shadow-lift); padding: 28px;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; }
+.modal-header h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; line-height: 1.2; }
+.modal-header .sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+.btn-close {
+  background: none; border: none; cursor: pointer; color: var(--ink-soft);
+  font-size: 20px; line-height: 1; padding: 4px; border-radius: 6px; flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.btn-close:hover { color: var(--copper-deep); background: var(--cream-deep); }
 
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: clamp(28px, 4vw, 38px);
-    margin: 0;
-    letter-spacing: -0.01em;
-  }
+.appt-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+}
+.appt-card .info .time { font-size: 12px; color: var(--copper); font-weight: 600; display: block; margin-bottom: 2px; }
+.appt-card .info b { display: block; font-size: 14.5px; }
+.appt-card .info span { font-size: 13px; color: var(--ink-soft); }
+.icon-btn {
+  background: none; border: none; cursor: pointer; color: var(--ink-soft);
+  font-size: 15px; padding: 4px; border-radius: 6px; line-height: 1;
+  transition: color 0.15s, background 0.15s; flex-shrink: 0;
+}
+.icon-btn:hover { color: var(--copper-deep); background: var(--cream-deep); }
+.empty-note { font-size: 13.5px; color: var(--ink-soft); padding: 10px 0 16px; font-style: italic; }
 
-  .sync-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    padding: 6px 13px 6px 10px;
-  }
-  .sync-pill .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--sage);
-  }
-  .sync-pill.offline .dot { background: var(--copper); }
-  .sync-pill.offline { color: var(--copper-deep); }
+.divider { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
+.section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 12px; }
 
-  /* ---------- TABS ---------- */
-  .tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--line);
-  }
-  .tab {
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    background: none;
-    border: none;
-    padding: 10px 4px;
-    margin-right: 22px;
-    cursor: pointer;
-    position: relative;
-    transition: color 0.2s ease;
-  }
-  .tab.active { color: var(--ink); }
-  .tab::after {
-    content: '';
-    position: absolute;
-    left: 0; bottom: -1px;
-    width: 100%; height: 2px;
-    background: var(--copper);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.25s ease;
-  }
-  .tab.active::after { transform: scaleX(1); }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: var(--ink-soft); }
+.field input, .field select, .field textarea {
+  width: 100%; font-family: 'Inter', sans-serif; font-size: 14.5px;
+  padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--white); color: var(--ink);
+}
+.field textarea { resize: vertical; min-height: 70px; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--copper); outline-offset: 1px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-  .view { display: none; }
-  .view.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: translateY(0);} }
+.btn {
+  font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
+  border-radius: 100px; padding: 11px 20px; border: none;
+  cursor: pointer; transition: transform 0.15s, opacity 0.15s, background 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--copper); color: var(--white); width: 100%; }
+.btn-primary:hover { background: var(--copper-deep); }
+.btn-ghost { background: none; color: var(--ink-soft); }
+.btn-ghost:hover { background: var(--cream-deep); }
+.btn-sm { font-size: 12px; padding: 7px 14px; }
 
-  /* ---------- CALENDAR NAV ---------- */
-  .cal-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-  .cal-nav .month-label {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-  .nav-btns { display: flex; gap: 8px; }
-  .nav-btn {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    border: 1px solid var(--line);
-    background: var(--white);
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s ease, transform 0.15s ease;
-  }
-  .nav-btn:hover { background: var(--cream-deep); transform: translateY(-1px); }
-  .nav-btn.today-btn {
-    width: auto; border-radius: 100px; padding: 0 16px;
-    font-size: 13px; font-weight: 600; font-family: 'Inter';
-  }
+/* ===== ATENCIONES ===== */
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+.page-header h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; }
 
-  /* ---------- CALENDAR GRID ---------- */
-  .weekday-row {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-  .weekday-row span {
-    font-size: 11.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-soft);
-    text-align: center;
-    padding-bottom: 4px;
-  }
+/* Resumen ingresos */
+.ingresos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.ingreso-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px;
+}
+.ingreso-card .label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 6px; }
+.ingreso-card .value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; color: var(--ink); line-height: 1; }
+.ingreso-card .value.highlight { color: var(--copper); }
+.ingreso-card .sub-val { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
 
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-  }
+/* Filtros */
+.filter-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+.filter-row input, .filter-row select {
+  font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--ink);
+}
+.filter-row input { flex: 1; min-width: 160px; }
+.filter-row input:focus, .filter-row select:focus { outline: 2px solid var(--copper); outline-offset: 1px; }
 
-  .day-cell {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    min-height: 92px;
-    min-width: 0;
-    padding: 8px;
-    cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    position: relative;
-    overflow: hidden;
-  }
-  .day-cell:hover { border-color: var(--copper); box-shadow: var(--shadow); }
-  .day-cell.empty { background: transparent; border-color: transparent; cursor: default; }
-  .day-cell.empty:hover { border-color: transparent; box-shadow: none; }
+/* Tarjeta de atención */
+.atencion-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 10px;
+  transition: box-shadow 0.15s;
+}
+.atencion-card:hover { box-shadow: var(--shadow); }
+.atencion-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.atencion-top .name { font-weight: 700; font-size: 15px; }
+.atencion-top .date { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.atencion-precio {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600;
+  color: var(--copper); white-space: nowrap;
+}
+.atencion-servicio { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 8px; }
+.productos-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-size: 11.5px; font-weight: 600; padding: 4px 10px;
+  background: var(--cream-deep); border-radius: 100px;
+  color: var(--ink-soft); border: 1px solid var(--line);
+}
+.atencion-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; align-items: center; }
 
-  .day-cell.is-today {
-    border-color: var(--copper);
-    border-width: 2px;
-  }
-  .day-num {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-  .day-cell.is-today .day-num { color: var(--copper); }
+/* Botones e Ítems del Historial */
+.btn-historial-cliente {
+  background: var(--cream-deep); color: var(--ink-soft);
+  font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px;
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.btn-historial-cliente:hover { background: var(--copper); color: var(--white); border-color: var(--copper); }
+.hist-atencion-item { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.hist-atencion-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; border-bottom: 1px dashed var(--line); padding-bottom: 4px; }
 
-  .strand {
-    font-size: 11px;
-    background: var(--cream-deep);
-    border-left: 3px solid var(--copper);
-    border-radius: 4px;
-    padding: 3px 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-  }
-  .strand b { font-weight: 600; }
-  .strand.more {
-    border-left-color: var(--gold);
-    color: var(--ink-soft);
-    background: transparent;
-    font-weight: 600;
-  }
+/* Productos dentro del modal de nueva atención */
+.prod-used-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.prod-used-row { display: grid; grid-template-columns: 1fr 90px 36px; gap: 8px; align-items: center; }
+.prod-used-row select { font-size: 13px; }
+.prod-used-row input { font-size: 13px; }
+.btn-add-prod {
+  font-size: 13px; font-weight: 600; color: var(--copper); background: none;
+  border: 1px dashed var(--copper); border-radius: 8px; padding: 8px 14px;
+  cursor: pointer; width: 100%; transition: background 0.15s;
+}
+.btn-add-prod:hover { background: rgba(184,85,61,0.06); }
 
-  /* ---------- MODAL ---------- */
-  .modal-backdrop {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(42,37,34,0.4);
-    align-items: center; justify-content: center;
-    padding: 20px;
-    z-index: 100;
-  }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--cream);
-    border-radius: var(--radius);
-    width: 100%;
-    max-width: 460px;
-    max-height: 86vh;
-    overflow-y: auto;
-    box-shadow: var(--shadow-lift);
-    padding: 26px;
-  }
-  .modal h2 {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 20px;
-    margin: 0 0 4px;
-  }
-  .modal h2 .cap { text-transform: capitalize; }
-  .modal .sub {
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin: 0 0 18px;
-  }
+/* ===== BASE DE CLIENTES ===== */
+.clientes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.cliente-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 18px; display: flex; flex-direction: column; justify-content: space-between;
+  transition: box-shadow 0.15s;
+}
+.cliente-card:hover { box-shadow: var(--shadow); }
+.cliente-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.cliente-card-header h4 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; }
+.cliente-detalles { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; display: flex; flex-direction: column; gap: 3px; }
+.cliente-pref {
+  background: var(--cream); border-left: 3px solid var(--gold);
+  border-radius: 4px; padding: 6px 10px; font-size: 12.5px;
+  color: var(--ink); margin-bottom: 12px; font-style: italic;
+}
 
-  .appt-card {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .appt-card .info b { display: block; font-size: 14.5px; }
-  .appt-card .info span { font-size: 13px; color: var(--ink-soft); }
-  .appt-card .time { font-size: 12px; color: var(--copper); font-weight: 600; margin-bottom: 2px; display: block; }
-  .icon-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--ink-soft); font-size: 15px;
-    padding: 4px; border-radius: 6px; line-height: 1;
-    transition: color 0.15s ease, background 0.15s ease;
-  }
-  .icon-btn:hover { color: var(--copper-deep); background: var(--cream-deep); }
+/* ===== INVENTARIO ===== */
+.inv-add { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+.inv-add input { flex: 1; min-width: 160px; font-family: 'Inter'; font-size: 14.5px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--ink); }
+.inv-add input:focus { outline: 2px solid var(--copper); outline-offset: 1px; }
+.inv-add input.qty { max-width: 120px; }
 
-  .empty-note {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    padding: 14px 0 18px;
-    font-style: italic;
-  }
+.inv-table { background: var(--white); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.inv-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 44px; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--line); gap: 10px; text-align: center; }
+.inv-row:last-child { border-bottom: none; }
+.inv-row .inv-cell-left { text-align: left; }
+.inv-row.head { background: var(--cream-deep); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.inv-name { font-weight: 600; font-size: 14.5px; }
+.inv-unidad { font-size: 12px; color: var(--ink-soft); font-weight: 400; display: block; }
+.qty-controls { display: flex; align-items: center; gap: 6px; justify-content: center; }
+.qty-controls button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.qty-controls button:hover { background: var(--cream-deep); }
+.qty-val { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+.qty-val.low { color: var(--copper-deep); }
+.stock-tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; text-align: center; white-space: nowrap; display: inline-block; }
+.stock-tag.ok { background: rgba(138,149,128,0.18); color: #5d6654; }
+.stock-tag.low { background: rgba(184,85,61,0.14); color: var(--copper-deep); }
 
-  form.add-form {
-    margin-top: 14px;
-    border-top: 1px solid var(--line);
-    padding-top: 16px;
-  }
-  .field { margin-bottom: 12px; }
-  .field label {
-    display: block;
-    font-size: 12.5px;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--ink-soft);
-  }
-  .field input, .field select {
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 14.5px;
-    padding: 9px 11px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--white);
-    color: var(--ink);
-  }
-  .field input:focus, .field select:focus {
-    outline: 2px solid var(--copper);
-    outline-offset: 1px;
-  }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Historial inventario */
+.inv-historial { margin-top: 28px; }
+.inv-historial h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px; margin-bottom: 14px; }
+.hist-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--white); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; gap: 12px; flex-wrap: wrap; }
+.hist-row .h-name { font-weight: 600; font-size: 13.5px; }
+.hist-row .h-detail { font-size: 12.5px; color: var(--ink-soft); }
+.hist-row .h-delta { font-size: 13px; font-weight: 700; color: var(--copper-deep); }
+.hist-row .h-date { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; }
 
-  .btn {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    border-radius: 100px;
-    padding: 11px 20px;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--copper); color: var(--white); width: 100%; }
-  .btn-primary:hover { background: var(--copper-deep); }
-  .btn-ghost { background: none; color: var(--ink-soft); }
-  .modal-close-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+/* Empty states */
+.empty-state { text-align: center; padding: 50px 20px; color: var(--ink-soft); }
+.empty-state .glyph { font-family: 'Fraunces', serif; font-style: italic; font-size: 26px; color: var(--copper); margin-bottom: 8px; }
 
-  /* ---------- INVENTORY ---------- */
-  .inv-add {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 22px;
-    flex-wrap: wrap;
-  }
-  .inv-add input { flex: 1; min-width: 160px; }
-  .inv-add input.qty { max-width: 110px; }
-
-  .inv-table {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .inv-row {
-    display: grid;
-    grid-template-columns: 1fr 100px 90px 44px;
-    align-items: center;
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--line);
-    gap: 10px;
-  }
-  .inv-row:last-child { border-bottom: none; }
-  .inv-row.head {
-    background: var(--cream-deep);
-    font-size: 11.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink-soft);
-  }
-  .inv-name { font-weight: 600; font-size: 14.5px; }
-  .qty-controls {
-    display: flex; align-items: center; gap: 6px;
-    justify-content: center;
-  }
-  .qty-controls button {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    border: 1px solid var(--line);
-    background: var(--white);
-    cursor: pointer;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink);
-  }
-  .qty-controls button:hover { background: var(--cream-deep); }
-  .qty-val { min-width: 28px; text-align: center; font-weight: 700; font-size: 14.5px; }
-  .qty-val.low { color: var(--copper-deep); }
-  .stock-tag {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 9px;
-    border-radius: 100px;
-    text-align: center;
-    white-space: nowrap;
-  }
-  .stock-tag.ok { background: rgba(138,149,128,0.18); color: #5d6654; }
-  .stock-tag.low { background: rgba(184,85,61,0.14); color: var(--copper-deep); }
-
-  .empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    color: var(--ink-soft);
-  }
-  .empty-state .glyph {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 26px;
-    color: var(--copper);
-    margin-bottom: 8px;
-  }
-
-  .config-banner {
-    background: #FFF8EC;
-    border: 1px solid var(--gold);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-size: 13.5px;
-    margin-bottom: 22px;
-    line-height: 1.5;
-  }
-  .config-banner b { color: var(--copper-deep); }
-  .config-banner code {
-    background: rgba(0,0,0,0.06);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 12.5px;
-  }
-
-  @media (max-width: 560px) {
-    .app { padding: 18px 12px 60px; }
-    header.top { margin-bottom: 18px; }
-    .tabs { margin-bottom: 16px; }
-    .cal-nav { margin-bottom: 12px; }
-    .cal-nav .month-label { font-size: 18px; }
-    .nav-btn { width: 32px; height: 32px; }
-
-    .weekday-row span { font-size: 10px; letter-spacing: 0.02em; }
-
-    .cal-grid { gap: 4px; }
-    .day-cell {
-      min-height: 56px;
-      padding: 4px;
-      border-radius: 8px;
-      gap: 3px;
-      overflow: hidden;
-    }
-    .day-num { font-size: 11px; }
-    .strand {
-      font-size: 0;
-      line-height: 0;
-      padding: 0;
-      height: 7px;
-      border-radius: 3px;
-      border-left: none;
-    }
-    .strand.more { display: none; }
-
-    .inv-row { grid-template-columns: 1fr 80px 36px; }
-    .inv-row .stock-tag { display: none; }
-  }
-
-  @media (min-width: 561px) and (max-width: 760px) {
-    .day-cell { min-height: 76px; }
-    .strand { font-size: 10px; }
-  }
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .app { padding: 18px 12px 60px; }
+  .ingresos-grid { grid-template-columns: 1fr 1fr; }
+  .ingresos-grid .ingreso-card:last-child { grid-column: span 2; }
+  .weekday-row span { font-size: 10px; letter-spacing: 0.02em; }
+  .cal-grid { gap: 4px; }
+  .day-cell { min-height: 58px; padding: 5px; border-radius: 8px; gap: 3px; }
+  .day-num { font-size: 11px; }
+  .strand { font-size: 0; line-height: 0; padding: 0; height: 7px; border-radius: 3px; border-left: none; }
+  .strand.more { display: none; }
+  .inv-row { grid-template-columns: 1.2fr 1fr 1fr 44px; }
+  .inv-row .stock-tag, .inv-row .inv-cell-inicial { display: none; }
+  .modal { padding: 20px; }
+  .row2, .row3 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-
 <div class="app">
+
   <header class="top">
     <div class="brand">
-      <span class="mark">Salón</span>
+      <span class="mark">Salón Margaret</span>
       <h1>Agenda</h1>
     </div>
     <div id="syncPill" class="sync-pill offline">
@@ -540,17 +361,14 @@
     </div>
   </header>
 
-  <div id="configBanner" class="config-banner" style="display:none;">
-    ⚠️ <b>Falta conectar Firebase.</b> Esta página todavía no guarda datos en la nube — solo funciona en este navegador.
-    Abre el archivo <code>index.html</code> y reemplaza el bloque <code>firebaseConfig</code> con el que te entrega tu proyecto de Firebase (lo explico en las instrucciones que te paso aparte).
-  </div>
-
   <div class="tabs">
     <button class="tab active" data-view="agenda">Agenda</button>
+    <button class="tab" data-view="atenciones">Atenciones</button>
+    <button class="tab" data-view="clientes">Clientes</button>
     <button class="tab" data-view="inventario">Inventario</button>
   </div>
 
-  <!-- AGENDA VIEW -->
+  <!-- ===== AGENDA ===== -->
   <section id="view-agenda" class="view active">
     <div class="cal-nav">
       <div class="month-label" id="monthLabel">—</div>
@@ -566,68 +384,263 @@
     <div class="cal-grid" id="calGrid"></div>
   </section>
 
-  <!-- INVENTORY VIEW -->
+  <!-- ===== ATENCIONES ===== -->
+  <section id="view-atenciones" class="view">
+    <div class="page-header">
+      <h2>Atenciones</h2>
+      <button class="btn btn-primary" style="width:auto;" id="btnNuevaAtencion">+ Nueva atención</button>
+    </div>
+
+    <div class="ingresos-grid" id="ingresosGrid">
+      <div class="ingreso-card">
+        <div class="label">Este mes</div>
+        <div class="value highlight" id="totalMes">$0</div>
+        <div class="sub-val" id="countMes">0 atenciones</div>
+      </div>
+      <div class="ingreso-card">
+        <div class="label">Semana actual</div>
+        <div class="value" id="totalSemana">$0</div>
+        <div class="sub-val" id="countSemana">0 atenciones</div>
+      </div>
+      <div class="ingreso-card">
+        <div class="label">Total histórico</div>
+        <div class="value" id="totalHistorico">$0</div>
+        <div class="sub-val" id="countTotal">0 atenciones</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <input type="text" id="filtroCliente" placeholder="Buscar por nombre de clienta…">
+    </div>
+
+    <div id="atencionList"></div>
+    <div id="atencionEmpty" class="empty-state" style="display:none;">
+      <div class="glyph">Sin atenciones</div>
+      <div>Registra tu primera atención para llevar el control de ingresos.</div>
+    </div>
+  </section>
+
+  <!-- ===== BASE DE CLIENTES ===== -->
+  <section id="view-clientes" class="view">
+    <div class="page-header">
+      <h2>Fichas de Clientes</h2>
+      <button class="btn btn-primary" style="width:auto;" id="btnNuevoCliente">+ Nueva ficha técnica</button>
+    </div>
+
+    <div class="filter-row">
+      <input type="text" id="filtroBaseClientes" placeholder="Buscar ficha de cliente…">
+    </div>
+
+    <div class="clientes-grid" id="clientesGridList"></div>
+    <div id="clientesEmpty" class="empty-state" style="display:none;">
+      <div class="glyph">Fichero vacío</div>
+      <div>Crea fichas técnicas para guardar cumpleaños y preferencias de coloración de tus clientas.</div>
+    </div>
+  </section>
+
+  <!-- ===== INVENTARIO ===== -->
   <section id="view-inventario" class="view">
     <div class="inv-add">
-      <input type="text" id="invNameInput" placeholder="Nombre del producto (ej. Shampoo morado 1L)">
-      <input type="number" id="invQtyInput" class="qty" placeholder="Cantidad" min="0">
-      <button class="btn btn-primary" id="invAddBtn" style="width:auto;">Agregar</button>
+      <input type="text" id="invNameInput" placeholder="Nombre del producto (ej. Tinte rubio 7.1)">
+      <input type="number" id="invQtyInput" class="qty" placeholder="Cant. Inicial" min="0">
+      <input type="text" id="invUnitInput" placeholder="Unidad (g, ml, un)" style="max-width:110px;">
+      <button class="btn btn-primary" id="invAddBtn" style="width:auto;">Agregar Producto</button>
     </div>
+
     <div class="inv-table" id="invTable">
       <div class="inv-row head">
-        <span>Producto</span><span>Cantidad</span><span>Estado</span><span></span>
+        <span class="inv-cell-left">Producto</span>
+        <span class="inv-cell-inicial">Lo que se tenía</span>
+        <span>Lo que se utilizó</span>
+        <span>Lo que se tiene</span>
+        <span>Estado</span>
+        <span></span>
       </div>
     </div>
     <div id="invEmpty" class="empty-state" style="display:none;">
-      <div class="glyph">Sin productos todavía</div>
-      <div>Agrega tu primer producto arriba para empezar a llevar el control.</div>
+      <div class="glyph">Sin productos</div>
+      <div>Agrega tu primer producto para empezar el control de stock.</div>
+    </div>
+
+    <div class="inv-historial" id="historialSection" style="display:none;">
+      <h3>Historial detallado de uso en atenciones</h3>
+      <div id="historialList"></div>
     </div>
   </section>
+
 </div>
 
-<!-- DAY MODAL -->
+<!-- ===== MODAL: DÍA (AGENDA) ===== -->
 <div class="modal-backdrop" id="dayModal">
   <div class="modal">
-    <h2 id="modalDate">—</h2>
-    <p class="sub">Citas agendadas para este día</p>
-    <div id="apptList"></div>
-    <div id="apptEmpty" class="empty-note" style="display:none;">Todavía no hay citas este día.</div>
+    <div class="modal-header">
+      <div>
+        <h2 id="modalDate">—</h2>
+        <div class="sub" id="modalApptCount">—</div>
+      </div>
+      <button class="btn-close" id="closeModalBtn" aria-label="Cerrar">✕</button>
+    </div>
 
-    <form class="add-form" id="apptForm">
+    <div id="apptList"></div>
+    <div id="apptEmpty" class="empty-note" style="display:none;">No hay citas agendadas para este día.</div>
+
+    <hr class="divider">
+    <div class="section-label">Agendar nueva cita</div>
+
+    <div class="field">
+      <label for="clienteInput">Nombre de la clienta</label>
+      <input type="text" id="clienteInput" placeholder="Ej. María González">
+    </div>
+    <div class="field">
+      <label for="servicioInput">Servicio</label>
+      <input type="text" id="servicioInput" placeholder="Ej. Corte + Balayage">
+    </div>
+    <div class="row2">
       <div class="field">
-        <label for="clienteInput">Nombre de la clienta</label>
-        <input type="text" id="clienteInput" placeholder="Ej. María González" required>
+        <label for="horaInput">Hora</label>
+        <input type="time" id="horaInput">
       </div>
       <div class="field">
-        <label for="servicioInput">Servicio</label>
-        <input type="text" id="servicioInput" placeholder="Ej. Corte + Balayage" required>
+        <label for="precioEstInput">Precio estimado (opcional)</label>
+        <input type="number" id="precioEstInput" placeholder="$">
       </div>
-      <div class="row2">
-        <div class="field">
-          <label for="horaInput">Hora</label>
-          <input type="time" id="horaInput" required>
-        </div>
-        <div class="field">
-          <label for="precioInput">Precio (opcional)</label>
-          <input type="number" id="precioInput" placeholder="$">
-        </div>
+    </div>
+    <button class="btn btn-primary" id="btnAgendarCita">Agendar cita</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: NUEVA ATENCIÓN ===== -->
+<div class="modal-backdrop" id="atencionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2>Nueva atención</h2>
+        <div class="sub">Registra el servicio realizado</div>
       </div>
-      <button type="submit" class="btn btn-primary">Agendar cita</button>
-      <div class="modal-close-row">
-        <button type="button" class="btn btn-ghost" id="closeModalBtn">Cerrar</button>
+      <button class="btn-close" id="closeAtencionBtn" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="aClienteInput">Clienta</label>
+        <input type="text" id="aClienteInput" placeholder="Nombre">
       </div>
-    </form>
+      <div class="field">
+        <label for="aFechaInput">Fecha</label>
+        <input type="date" id="aFechaInput">
+      </div>
+    </div>
+    <div class="field">
+      <label for="aServicioInput">Servicio realizado</label>
+      <input type="text" id="aServicioInput" placeholder="Ej. Coloración completa + corte">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="aPrecioInput">Cobrado ($)</label>
+        <input type="number" id="aPrecioInput" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="aMetodoPagoInput">Método de pago</label>
+        <select id="aMetodoPagoInput">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="debito">Débito</option>
+          <option value="credito">Crédito</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="aNotasInput">Notas (opcional)</label>
+      <textarea id="aNotasInput" placeholder="Ej. Usó tintura especial, requiere cuidado con decolorante…"></textarea>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">Insumos/Productos utilizados en esta sesión</div>
+    <div class="prod-used-list" id="prodUsedList"></div>
+    <button class="btn-add-prod" id="btnAddProd">+ Agregar producto gastado</button>
+
+    <div style="margin-top:18px;">
+      <button class="btn btn-primary" id="btnGuardarAtencion">Guardar atención y descontar stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: NUEVO CLIENTE (FICHA) ===== -->
+<div class="modal-backdrop" id="clienteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2>Ficha Técnica de Cliente</h2>
+        <div class="sub">Perfil técnico y datos de contacto</div>
+      </div>
+      <button class="btn-close" id="closeClienteBtn" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="field">
+      <label for="cNombreInput">Nombre completo *</label>
+      <input type="text" id="cNombreInput" placeholder="Ej. Clara Soto">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="cTelefonoInput">Teléfono</label>
+        <input type="text" id="cTelefonoInput" placeholder="Ej. +569...">
+      </div>
+      <div class="field">
+        <label for="cCumpleInput">Cumpleaños</label>
+        <input type="date" id="cCumpleInput">
+      </div>
+    </div>
+    <div class="field">
+      <label for="cCorreoInput">Correo electrónico</label>
+      <input type="email" id="cCorreoInput" placeholder="nombre@correo.com">
+    </div>
+    <div class="field">
+      <label for="cPreferenciasInput">Preferencias / Fórmulas Técnicas</label>
+      <textarea id="cPreferenciasInput" placeholder="Ej. Tinte mezcla 7.1 + 8.0 a 20 vol. Sensibilidad a decolorantes. Prefiere tratamientos hidratantes post-color."></textarea>
+    </div>
+
+    <div style="margin-top:18px;">
+      <button class="btn btn-primary" id="btnGuardarCliente">Guardar Ficha Cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: HISTORIAL POR CLIENTA ===== -->
+<div class="modal-backdrop" id="clienteHistorialModal">
+  <div class="modal" style="max-width: 650px;">
+    <div class="modal-header">
+      <div>
+        <h2 id="histNombreCliente">Historial de Clienta</h2>
+        <div class="sub">Expediente técnico y registro de visitas</div>
+      </div>
+      <button class="btn-close" id="closeHistorialBtn" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="ingresos-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+      <div class="ingreso-card" style="padding: 10px 12px;">
+        <div class="label" style="font-size: 10px;">Total Pagado</div>
+        <div class="value" id="histTotalPagado" style="font-size: 18px; color: var(--copper);">$0</div>
+      </div>
+      <div class="ingreso-card" style="padding: 10px 12px;">
+        <div class="label" style="font-size: 10px;">Visitas</div>
+        <div class="value" id="histTotalVisitas" style="font-size: 18px;">0</div>
+      </div>
+      <div class="ingreso-card" style="padding: 10px 12px;">
+        <div class="label" style="font-size: 10px;">Última Visita</div>
+        <div class="sub-val" id="histUltimaFecha" style="font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--ink);">—</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">Historial de Atenciones Pasadas</div>
+    <div id="historialAtencionesClienteList" style="display: flex; flex-direction: column; gap: 12px; max-height: 45vh; overflow-y: auto; padding-right: 4px;"></div>
   </div>
 </div>
 
 <script type="module">
-  // Esperamos a que el script de Firebase del head termine de configurarse
   function waitForFirebase() {
     return new Promise(resolve => {
-      const check = () => {
-        if (window.__firebase) resolve(window.__firebase);
-        else setTimeout(check, 20);
-      };
+      const check = () => { if (window.__firebase) resolve(window.__firebase); else setTimeout(check, 20); };
       check();
     });
   }
@@ -635,63 +648,83 @@
 
   const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
-  let current = new Date();
-  current.setDate(1);
-  let appointments = {}; // { "YYYY-MM-DD": [ {id, cliente, servicio, hora, precio} ] }
-  let inventory = [];    // [ {id, nombre, cantidad} ]
+  let current = new Date(); current.setDate(1);
+  let appointments = {};
+  let atenciones = [];
+  let inventory = [];
+  let historial = [];
+  let clientes = [];
   let selectedDateKey = null;
 
-  // ---------- LOCAL FALLBACK (si Firebase no está configurado) ----------
-  const LOCAL_APPT_KEY = "salon_appts_v1";
-  const LOCAL_INV_KEY = "salon_inv_v1";
-
+  // ---------- LOCAL FALLBACK ----------
   function loadLocal() {
-    try { appointments = JSON.parse(localStorage.getItem(LOCAL_APPT_KEY) || "{}"); } catch { appointments = {}; }
-    try { inventory = JSON.parse(localStorage.getItem(LOCAL_INV_KEY) || "[]"); } catch { inventory = []; }
+    try { appointments = JSON.parse(localStorage.getItem("salon_appts_v1") || "{}"); } catch { appointments = {}; }
+    try { atenciones = JSON.parse(localStorage.getItem("salon_atenciones_v1") || "[]"); } catch { atenciones = []; }
+    try { inventory = JSON.parse(localStorage.getItem("salon_inv_v1") || "[]"); } catch { inventory = []; }
+    try { historial = JSON.parse(localStorage.getItem("salon_hist_v1") || "[]"); } catch { historial = []; }
+    try { clientes = JSON.parse(localStorage.getItem("salon_clientes_v1") || "[]"); } catch { clientes = []; }
   }
-  function saveLocalAppts() { localStorage.setItem(LOCAL_APPT_KEY, JSON.stringify(appointments)); }
-  function saveLocalInv() { localStorage.setItem(LOCAL_INV_KEY, JSON.stringify(inventory)); }
+  function saveLocal(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
   // ---------- SYNC STATUS ----------
-  function setSyncStatus(connected) {
+  function setSyncStatus(ok) {
     const pill = document.getElementById("syncPill");
     const text = document.getElementById("syncText");
-    if (connected) {
-      pill.classList.remove("offline");
-      text.textContent = "Sincronizado";
-    } else {
-      pill.classList.add("offline");
-      text.textContent = "Sin conexión a la nube";
+    if(pill && text) {
+      pill.classList.toggle("offline", !ok);
+      text.textContent = ok ? "Sincronizado" : "Sin conexión a la nube";
     }
   }
 
   if (!fb.ready) {
-    document.getElementById("configBanner").style.display = "block";
     setSyncStatus(false);
     loadLocal();
+    initUI();
   } else {
     setSyncStatus(true);
-    // Escuchar citas en tiempo real
-    fb.onSnapshot(fb.collection(fb.db, "appointments"), (snap) => {
+
+    fb.onSnapshot(fb.collection(fb.db, "appointments"), snap => {
       appointments = {};
-      snap.forEach(docSnap => {
-        const data = docSnap.data();
-        const key = data.dateKey;
-        if (!appointments[key]) appointments[key] = [];
-        appointments[key].push({ id: docSnap.id, ...data });
+      snap.forEach(d => {
+        const data = d.data();
+        if (!appointments[data.dateKey]) appointments[data.dateKey] = [];
+        appointments[data.dateKey].push({ id: d.id, ...data });
       });
-      Object.values(appointments).forEach(list => list.sort((a,b) => (a.hora||"").localeCompare(b.hora||"")));
+      Object.values(appointments).forEach(l => l.sort((a,b) => (a.hora||"").localeCompare(b.hora||"")));
       renderCalendar();
       if (selectedDateKey) renderApptList(selectedDateKey);
-    }, (err) => { console.error(err); setSyncStatus(false); });
+    }, err => { console.error(err); setSyncStatus(false); });
 
-    // Escuchar inventario en tiempo real
-    fb.onSnapshot(fb.collection(fb.db, "inventory"), (snap) => {
+    fb.onSnapshot(fb.collection(fb.db, "atenciones"), snap => {
+      atenciones = [];
+      snap.forEach(d => atenciones.push({ id: d.id, ...d.data() }));
+      atenciones.sort((a,b) => (b.fecha||"").localeCompare(a.fecha||""));
+      renderAtenciones();
+      renderResumen();
+    }, err => { console.error(err); setSyncStatus(false); });
+
+    fb.onSnapshot(fb.collection(fb.db, "inventory"), snap => {
       inventory = [];
-      snap.forEach(docSnap => inventory.push({ id: docSnap.id, ...docSnap.data() }));
+      snap.forEach(d => inventory.push({ id: d.id, ...d.data() }));
       inventory.sort((a,b) => a.nombre.localeCompare(b.nombre));
       renderInventory();
-    }, (err) => { console.error(err); setSyncStatus(false); });
+    }, err => { console.error(err); setSyncStatus(false); });
+
+    fb.onSnapshot(fb.collection(fb.db, "historial"), snap => {
+      historial = [];
+      snap.forEach(d => historial.push({ id: d.id, ...d.data() }));
+      historial.sort((a,b) => (b.fecha||"").localeCompare(a.fecha||""));
+      renderHistorial();
+    }, err => { console.error(err); setSyncStatus(false); });
+
+    fb.onSnapshot(fb.collection(fb.db, "clientes"), snap => {
+      clientes = [];
+      snap.forEach(d => clientes.push({ id: d.id, ...d.data() }));
+      clientes.sort((a,b) => a.nombre.localeCompare(b.nombre));
+      renderClientes();
+    }, err => { console.error(err); setSyncStatus(false); });
+
+    initUI();
   }
 
   // ---------- TABS ----------
@@ -704,238 +737,517 @@
     });
   });
 
-  // ---------- CALENDAR RENDER ----------
-  function dateKey(y, m, d) {
-    return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  function initUI() {
+    renderCalendar();
+    renderInventory();
+    renderAtenciones();
+    renderResumen();
+    renderHistorial();
+    renderClientes();
+    setupStaticEventListeners();
   }
 
-  function renderCalendar() {
-    const y = current.getFullYear();
-    const m = current.getMonth();
-    document.getElementById("monthLabel").textContent = `${MESES[m]} ${y}`;
+  // ---------- HELPERS ----------
+  function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+  function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str||""; return d.innerHTML; }
+  function formatPeso(n) { return "$" + Number(n||0).toLocaleString("es-CL"); }
+  function formatDate(iso) {
+    if (!iso) return "";
+    const [y,m,d] = iso.split("-");
+    return `${parseInt(d)} de ${MESES[parseInt(m)-1]} ${y}`;
+  }
+  function formatCumple(iso) {
+    if (!iso) return "No registrado";
+    const [,m,d] = iso.split("-");
+    return `${parseInt(d)} de ${MESES[parseInt(m)-1]}`;
+  }
 
+  // ---------- CALENDAR ----------
+  function renderCalendar() {
+    const y = current.getFullYear(), m = current.getMonth();
+    document.getElementById("monthLabel").textContent = `${MESES[m]} ${y}`;
     const grid = document.getElementById("calGrid");
     grid.innerHTML = "";
-
     const firstDay = new Date(y, m, 1);
-    // Lunes = 0 ... Domingo = 6
-    let startOffset = (firstDay.getDay() + 6) % 7;
+    const startOffset = (firstDay.getDay() + 6) % 7;
     const daysInMonth = new Date(y, m+1, 0).getDate();
-
-    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const today = new Date();
+    const todayK = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
     for (let i = 0; i < startOffset; i++) {
-      const empty = document.createElement("div");
-      empty.className = "day-cell empty";
-      grid.appendChild(empty);
+      const e = document.createElement("div"); e.className = "day-cell empty"; grid.appendChild(e);
     }
-
     for (let d = 1; d <= daysInMonth; d++) {
       const key = dateKey(y, m, d);
       const cell = document.createElement("div");
-      cell.className = "day-cell" + (key === todayKey ? " is-today" : "");
+      cell.className = "day-cell" + (key === todayK ? " is-today" : "");
       cell.innerHTML = `<span class="day-num">${d}</span>`;
-
       const dayAppts = appointments[key] || [];
-      const maxShow = 2;
-      dayAppts.slice(0, maxShow).forEach(a => {
+      dayAppts.slice(0, 2).forEach(a => {
         const s = document.createElement("div");
         s.className = "strand";
         s.innerHTML = `<b>${escapeHtml(a.cliente)}</b> · ${escapeHtml(a.servicio)}`;
         cell.appendChild(s);
       });
-      if (dayAppts.length > maxShow) {
+      if (dayAppts.length > 2) {
         const more = document.createElement("div");
         more.className = "strand more";
-        more.textContent = `+${dayAppts.length - maxShow} más`;
+        more.textContent = `+${dayAppts.length - 2} más`;
         cell.appendChild(more);
       }
-
       cell.addEventListener("click", () => openDayModal(key, y, m, d));
       grid.appendChild(cell);
     }
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str || "";
-    return div.innerHTML;
-  }
-
-  document.getElementById("prevBtn").addEventListener("click", () => {
-    current.setMonth(current.getMonth() - 1);
-    renderCalendar();
-  });
-  document.getElementById("nextBtn").addEventListener("click", () => {
-    current.setMonth(current.getMonth() + 1);
-    renderCalendar();
-  });
-  document.getElementById("todayBtn").addEventListener("click", () => {
-    current = new Date(); current.setDate(1);
-    renderCalendar();
-  });
-
   // ---------- DAY MODAL ----------
   function openDayModal(key, y, m, d) {
     selectedDateKey = key;
-    const dateObj = new Date(y, m, d);
-    const weekday = dateObj.toLocaleDateString("es-ES", { weekday: "long" });
-    const weekdayCap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-    document.getElementById("modalDate").textContent = `${weekdayCap} ${d} de ${MESES[m]}`;
+    const weekday = new Date(y, m, d).toLocaleDateString("es-ES", { weekday: "long" });
+    const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    document.getElementById("modalDate").textContent = `${cap} ${d} de ${MESES[m]}`;
     renderApptList(key);
     document.getElementById("dayModal").classList.add("show");
   }
 
   function renderApptList(key) {
     const list = document.getElementById("apptList");
-    const emptyNote = document.getElementById("apptEmpty");
+    const empty = document.getElementById("apptEmpty");
+    const count = document.getElementById("modalApptCount");
     list.innerHTML = "";
     const dayAppts = (appointments[key] || []).slice().sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
-
-    if (dayAppts.length === 0) {
-      emptyNote.style.display = "block";
-    } else {
-      emptyNote.style.display = "none";
-      dayAppts.forEach(a => {
-        const card = document.createElement("div");
-        card.className = "appt-card";
-        card.innerHTML = `
-          <div class="info">
-            <span class="time">${a.hora || ""}</span>
-            <b>${escapeHtml(a.cliente)}</b>
-            <span>${escapeHtml(a.servicio)}${a.precio ? " · $" + escapeHtml(String(a.precio)) : ""}</span>
-          </div>
-          <button class="icon-btn" data-id="${a.id}" title="Eliminar cita">✕</button>
-        `;
-        card.querySelector("button").addEventListener("click", () => deleteAppt(a.id, key));
-        list.appendChild(card);
-      });
-    }
+    count.textContent = dayAppts.length === 0 ? "Sin citas" : `${dayAppts.length} cita${dayAppts.length>1?"s":""}`;
+    empty.style.display = dayAppts.length === 0 ? "block" : "none";
+    dayAppts.forEach(a => {
+      const card = document.createElement("div");
+      card.className = "appt-card";
+      card.innerHTML = `
+        <div class="info">
+          <span class="time">${a.hora||""}</span>
+          <b>${escapeHtml(a.cliente)}</b>
+          <span>${escapeHtml(a.servicio)}${a.precioEst ? " · " + formatPeso(a.precioEst) : ""}</span>
+        </div>
+        <button class="icon-btn" title="Eliminar cita">✕</button>
+      `;
+      card.querySelector("button").addEventListener("click", () => deleteAppt(a.id, key));
+      list.appendChild(card);
+    });
   }
 
-  document.getElementById("closeModalBtn").addEventListener("click", () => {
-    document.getElementById("dayModal").classList.remove("show");
-    document.getElementById("apptForm").reset();
-  });
-  document.getElementById("dayModal").addEventListener("click", (e) => {
-    if (e.target.id === "dayModal") {
-      document.getElementById("dayModal").classList.remove("show");
-    }
-  });
-
-  document.getElementById("apptForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const cliente = document.getElementById("clienteInput").value.trim();
-    const servicio = document.getElementById("servicioInput").value.trim();
-    const hora = document.getElementById("horaInput").value;
-    const precio = document.getElementById("precioInput").value;
-    if (!cliente || !servicio) return;
-
-    const newAppt = { dateKey: selectedDateKey, cliente, servicio, hora, precio: precio || null };
-
-    if (fb.ready) {
-      const id = `${selectedDateKey}_${Date.now()}`;
-      await fb.setDoc(fb.doc(fb.db, "appointments", id), newAppt);
-    } else {
-      if (!appointments[selectedDateKey]) appointments[selectedDateKey] = [];
-      newAppt.id = "local_" + Date.now();
-      appointments[selectedDateKey].push(newAppt);
-      saveLocalAppts();
-      renderCalendar();
-      renderApptList(selectedDateKey);
-    }
-    document.getElementById("apptForm").reset();
-  });
-
   async function deleteAppt(id, key) {
+    if (!confirm("¿Eliminar esta cita?")) return;
     if (fb.ready) {
       await fb.deleteDoc(fb.doc(fb.db, "appointments", id));
     } else {
       appointments[key] = (appointments[key] || []).filter(a => a.id !== id);
-      saveLocalAppts();
+      saveLocal("salon_appts_v1", appointments);
       renderCalendar();
       renderApptList(key);
     }
   }
 
-  // ---------- INVENTORY ----------
-  function renderInventory() {
-    const table = document.getElementById("invTable");
-    const emptyState = document.getElementById("invEmpty");
-    const rows = table.querySelectorAll(".inv-row:not(.head)");
-    rows.forEach(r => r.remove());
+  function closeModal() {
+    document.getElementById("dayModal").classList.remove("show");
+    document.getElementById("clienteInput").value = "";
+    document.getElementById("servicioInput").value = "";
+    document.getElementById("horaInput").value = "";
+    document.getElementById("precioEstInput").value = "";
+  }
 
-    if (inventory.length === 0) {
-      emptyState.style.display = "block";
-      table.style.display = "none";
+  // ---------- ATENCIONES ----------
+  function renderAtenciones() {
+    const list = document.getElementById("atencionList");
+    const empty = document.getElementById("atencionEmpty");
+    list.innerHTML = "";
+
+    const filtro = document.getElementById("filtroCliente").value.toLowerCase().trim();
+    const filtradas = atenciones.filter(a => (a.cliente || "").toLowerCase().includes(filtro));
+
+    if (filtradas.length === 0) {
+      empty.style.display = "block";
       return;
     }
-    emptyState.style.display = "none";
-    table.style.display = "block";
+    empty.style.display = "none";
+
+    filtradas.forEach(a => {
+      const card = document.createElement("div");
+      card.className = "atencion-card";
+      card.innerHTML = `
+        <div class="atencion-top">
+          <div>
+            <div class="name">${escapeHtml(a.cliente)}</div>
+            <div class="date">${formatDate(a.fecha)}</div>
+          </div>
+          <div class="atencion-precio">${formatPeso(a.precio)}</div>
+        </div>
+        <div class="atencion-servicio"><b>Servicio:</b> ${escapeHtml(a.servicio)}</div>
+        ${a.notas ? `<div class="atencion-servicio" style="font-style: italic; font-size: 12.5px;"><b>Notas:</b> ${escapeHtml(a.notas)}</div>` : ''}
+        <div class="productos-chips">
+          ${(a.productos || []).map(p => `<span class="chip">${escapeHtml(p.nombre)} (${p.cantidad} ${p.unidad||'g'})</span>`).join('')}
+        </div>
+        <div class="atencion-actions">
+          <span class="chip" style="background:transparent; border-color:transparent; text-transform: capitalize; font-weight:normal;">💳 ${a.metodoPago || 'efectivo'}</span>
+          <button class="btn-historial-cliente" data-cliente="${escapeHtml(a.cliente)}">📋 Ver Historial</button>
+        </div>
+      `;
+      card.querySelector(".btn-historial-cliente").addEventListener("click", () => {
+        openClienteHistorialModal(a.cliente);
+      });
+      list.appendChild(card);
+    });
+  }
+
+  function renderResumen() {
+    let totalM = 0, countM = 0;
+    let totalS = 0, countS = 0;
+    let totalH = 0, countH = atenciones.length;
+
+    const ahora = new Date();
+    const esteMesStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+    const d = ahora.getDay();
+    const diff = ahora.getDate() - d + (d === 0 ? -6 : 1);
+    const inicioSemana = new Date(ahora.setDate(diff));
+    inicioSemana.setHours(0,0,0,0);
+
+    atenciones.forEach(a => {
+      const precio = parseFloat(a.precio || 0);
+      totalH += precio;
+      if (a.fecha && a.fecha.startsWith(esteMesStr)) { totalM += precio; countM++; }
+      if (a.fecha) {
+        const fA = new Date(a.fecha + "T00:00:00");
+        if (fA >= inicioSemana) { totalS += precio; countS++; }
+      }
+    });
+
+    document.getElementById("totalMes").textContent = formatPeso(totalM);
+    document.getElementById("countMes").textContent = `${countM} atención${countM!==1?'es':''}`;
+    document.getElementById("totalSemana").textContent = formatPeso(totalS);
+    document.getElementById("countSemana").textContent = `${countS} atención${countS!==1?'es':''}`;
+    document.getElementById("totalHistorico").textContent = formatPeso(totalH);
+    document.getElementById("countTotal").textContent = `${countH} atención${countH!==1?'es':''}`;
+  }
+
+  // ---------- BASE DE CLIENTES (FICHAS TÉCNICAS) ----------
+  function renderClientes() {
+    const grid = document.getElementById("clientesGridList");
+    const empty = document.getElementById("clientesEmpty");
+    grid.innerHTML = "";
+
+    const filtro = document.getElementById("filtroBaseClientes").value.toLowerCase().trim();
+    const filtrados = clientes.filter(c => (c.nombre || "").toLowerCase().includes(filtro));
+
+    if (filtrados.length === 0) {
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    filtrados.forEach(c => {
+      const card = document.createElement("div");
+      card.className = "cliente-card";
+      card.innerHTML = `
+        <div>
+          <div class="cliente-card-header">
+            <h4>${escapeHtml(c.nombre)}</h4>
+            <button class="icon-btn btn-del-cliente" title="Eliminar Ficha">✕</button>
+          </div>
+          <div class="cliente-detalles">
+            <span>📞 <b>Teléfono:</b> ${escapeHtml(c.telefono || 'No registrado')}</span>
+            <span>✉️ <b>Correo:</b> ${escapeHtml(c.correo || 'No registrado')}</span>
+            <span>🎂 <b>Cumpleaños:</b> ${formatCumple(c.cumple)}</span>
+          </div>
+          ${c.preferencias ? `<div class="cliente-pref"><b>Preferencias/Fórmulas:</b> ${escapeHtml(c.preferencias)}</div>` : ''}
+        </div>
+        <div>
+          <button class="btn btn-ghost btn-sm btn-historial-desde-ficha" style="width:100%; border: 1px solid var(--line);">📋 Ver Historial Completo</button>
+        </div>
+      `;
+      card.querySelector(".btn-historial-desde-ficha").addEventListener("click", () => openClienteHistorialModal(c.nombre));
+      card.querySelector(".btn-del-cliente").addEventListener("click", () => deleteCliente(c));
+      grid.appendChild(card);
+    });
+  }
+
+  async function deleteCliente(c) {
+    if (!confirm(`¿Eliminar la ficha técnica de "${c.nombre}"?`)) return;
+    if (fb.ready) {
+      await fb.deleteDoc(fb.doc(fb.db, "clientes", c.id));
+    } else {
+      clientes = clientes.filter(i => i.id !== c.id);
+      saveLocal("salon_clientes_v1", clientes);
+      renderClientes();
+    }
+  }
+
+  // ---------- HISTORIAL POR CLIENTA MODAL ----------
+  function openClienteHistorialModal(nombreCliente) {
+    if (!nombreCliente) return;
+    const filtradas = atenciones.filter(a => a.cliente && a.cliente.trim().toLowerCase() === nombreCliente.trim().toLowerCase());
+    document.getElementById("histNombreCliente").textContent = `Historial: ${nombreCliente}`;
+    
+    const totalPagadoElem = document.getElementById("histTotalPagado");
+    const totalVisitasElem = document.getElementById("histTotalVisitas");
+    const ultimaFechaElem = document.getElementById("histUltimaFecha");
+    const listaHistorial = document.getElementById("historialAtencionesClienteList");
+    listaHistorial.innerHTML = "";
+
+    if (filtradas.length === 0) {
+      totalPagadoElem.textContent = formatPeso(0);
+      totalVisitasElem.textContent = "0";
+      ultimaFechaElem.textContent = "—";
+      listaHistorial.innerHTML = `<div class="empty-note">No hay atenciones registradas aún para esta clienta.</div>`;
+      document.getElementById("clienteHistorialModal").classList.add("show");
+      return;
+    }
+
+    let totalDinero = 0;
+    filtradas.forEach(a => totalDinero += parseFloat(a.precio || 0));
+    totalPagadoElem.textContent = formatPeso(totalDinero);
+    totalVisitasElem.textContent = filtradas.length;
+    ultimaFechaElem.textContent = formatDate(filtradas[0].fecha);
+
+    filtradas.forEach(a => {
+      const item = document.createElement("div");
+      item.className = "hist-atencion-item";
+      let prodsHtml = "";
+      if (a.productos && a.productos.length > 0) {
+        prodsHtml = `
+          <div style="margin-top: 6px;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--ink-soft);">Insumos usados:</span>
+            <div class="productos-chips" style="margin-top: 2px;">
+              ${a.productos.map(p => `<span class="chip" style="font-size: 10.5px;">${escapeHtml(p.nombre)} (${p.cantidad} ${p.unidad||'g'})</span>`).join('')}
+            </div>
+          </div>`;
+      }
+      item.innerHTML = `
+        <div class="hist-atencion-meta">
+          <span>📅 ${formatDate(a.fecha)}</span>
+          <span style="text-transform: uppercase; font-weight:700; color:var(--copper);">${formatPeso(a.precio)}</span>
+        </div>
+        <div style="font-size: 13.5px; margin-bottom: 4px;"><b>Servicio:</b> ${escapeHtml(a.servicio)}</div>
+        ${a.notas ? `<div style="font-size: 12.5px; color: var(--ink-soft); font-style: italic; background: var(--cream); padding: 4px 8px; border-radius: 4px; margin-top: 4px;"><b>Nota:</b> ${escapeHtml(a.notas)}</div>` : ''}
+        ${prodsHtml}
+        <div style="font-size: 11px; color: var(--ink-soft); text-align: right; margin-top: 6px; font-weight: 500;">Pago: ${escapeHtml(a.metodoPago || 'efectivo')}</div>
+      `;
+      listaHistorial.appendChild(item);
+    });
+    document.getElementById("clienteHistorialModal").classList.add("show");
+  }
+
+  // ---------- INVENTARIO ----------
+  function renderInventory() {
+    const table = document.getElementById("invTable");
+    const empty = document.getElementById("invEmpty");
+    table.querySelectorAll(".inv-row:not(.head)").forEach(r => r.remove());
+
+    if (inventory.length === 0) { empty.style.display = "block"; return; }
+    empty.style.display = "none";
 
     inventory.forEach(item => {
-      const low = item.cantidad <= 2;
       const row = document.createElement("div");
       row.className = "inv-row";
+      const un = escapeHtml(item.unidad || 'g');
+      const totalUsado = parseFloat(item.totalUsado || 0);
+      const stockActual = parseFloat(item.cantidad || 0);
+      const loQueSeTenia = stockActual + totalUsado;
+      const esBajo = stockActual <= 5;
+
       row.innerHTML = `
-        <span class="inv-name">${escapeHtml(item.nombre)}</span>
-        <span class="qty-controls">
-          <button data-action="minus" aria-label="Restar">−</button>
-          <span class="qty-val ${low ? "low" : ""}">${item.cantidad}</span>
-          <button data-action="plus" aria-label="Sumar">+</button>
-        </span>
-        <span class="stock-tag ${low ? "low" : "ok"}">${low ? "Stock bajo" : "Disponible"}</span>
-        <button class="icon-btn" data-action="delete" title="Eliminar producto">✕</button>
+        <div class="inv-cell-left">
+          <span class="inv-name">${escapeHtml(item.nombre)}</span>
+          <span class="inv-unidad">Métrica: ${un}</span>
+        </div>
+        <div class="inv-cell-inicial" style="font-size:14px; font-weight:500; color: var(--ink-soft);">${loQueSeTenia} ${un}</div>
+        <div style="font-size:14px; font-weight:600; color: var(--copper);">${totalUsado} ${un}</div>
+        <div class="qty-controls">
+          <button class="btn-minus">−</button>
+          <span class="qty-val ${esBajo?'low':''}">${stockActual} ${un}</span>
+          <button class="btn-plus">+</button>
+        </div>
+        <div><span class="stock-tag ${esBajo?'low':'ok'}">${esBajo?'Crítico':'Saludable'}</span></div>
+        <button class="icon-btn btn-del-inv" title="Eliminar insumo">✕</button>
       `;
-      row.querySelector('[data-action="minus"]').addEventListener("click", () => changeQty(item, -1));
-      row.querySelector('[data-action="plus"]').addEventListener("click", () => changeQty(item, 1));
-      row.querySelector('[data-action="delete"]').addEventListener("click", () => deleteItem(item));
+      row.querySelector(".btn-minus").addEventListener("click", () => updateQty(item, -10));
+      row.querySelector(".btn-plus").addEventListener("click", () => updateQty(item, 10));
+      row.querySelector(".btn-del-inv").addEventListener("click", () => deleteItem(item));
       table.appendChild(row);
     });
   }
 
-  async function changeQty(item, delta) {
-    const newQty = Math.max(0, (item.cantidad || 0) + delta);
-    if (fb.ready) {
-      await fb.setDoc(fb.doc(fb.db, "inventory", item.id), { nombre: item.nombre, cantidad: newQty });
-    } else {
-      item.cantidad = newQty;
-      saveLocalInv();
-      renderInventory();
-    }
+  async function updateQty(item, delta) {
+    const nuevaCant = Math.max(0, parseFloat(item.cantidad || 0) + delta);
+    if (fb.ready) { await fb.setDoc(fb.doc(fb.db, "inventory", item.id), { cantidad: nuevaCant }, { merge: true }); }
+    else { item.cantidad = nuevaCant; saveLocal("salon_inv_v1", inventory); renderInventory(); }
   }
-
   async function deleteItem(item) {
-    if (fb.ready) {
-      await fb.deleteDoc(fb.doc(fb.db, "inventory", item.id));
-    } else {
-      inventory = inventory.filter(i => i.id !== item.id);
-      saveLocalInv();
-      renderInventory();
-    }
+    if (!confirm(`¿Eliminar "${item.nombre}"?`)) return;
+    if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "inventory", item.id)); }
+    else { inventory = inventory.filter(i => i.id !== item.id); saveLocal("salon_inv_v1", inventory); renderInventory(); }
   }
 
-  document.getElementById("invAddBtn").addEventListener("click", async () => {
-    const nombre = document.getElementById("invNameInput").value.trim();
-    const cantidad = parseInt(document.getElementById("invQtyInput").value, 10);
-    if (!nombre || isNaN(cantidad)) return;
+  function renderHistorial() {
+    const sec = document.getElementById("historialSection");
+    const list = document.getElementById("historialList");
+    list.innerHTML = "";
+    if (historial.length === 0) { sec.style.display = "none"; return; }
+    sec.style.display = "block";
+    historial.slice(0, 30).forEach(h => {
+      const row = document.createElement("div");
+      row.className = "hist-row";
+      row.innerHTML = `
+        <div>
+          <div class="h-name">${escapeHtml(h.nombre)}</div>
+          <div class="h-detail">Clienta: ${escapeHtml(h.cliente)} · Servicio: ${escapeHtml(h.servicio)}</div>
+        </div>
+        <div class="h-delta">−${h.cantidad} ${h.unidad||"g"}</div>
+        <div class="h-date">${formatDate(h.fecha)}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
 
-    if (fb.ready) {
-      const id = "item_" + Date.now();
-      await fb.setDoc(fb.doc(fb.db, "inventory", id), { nombre, cantidad });
-    } else {
-      inventory.push({ id: "local_" + Date.now(), nombre, cantidad });
-      saveLocalInv();
-      renderInventory();
-    }
-    document.getElementById("invNameInput").value = "";
-    document.getElementById("invQtyInput").value = "";
-  });
+  function agregarFilaProducto() {
+    const contenedor = document.getElementById("prodUsedList");
+    const row = document.createElement("div");
+    row.className = "prod-used-row";
+    let opciones = `<option value="">-- Seleccionar insumo --</option>`;
+    inventory.forEach(p => { opciones += `<option value="${p.id}">${escapeHtml(p.nombre)} (Quedan: ${p.cantidad} ${p.unidad||'g'})</option>`; });
+    row.innerHTML = `
+      <select class="select-prod">${opciones}</select>
+      <input type="number" class="input-cant-prod" placeholder="Gramos" min="0" step="0.1">
+      <button class="icon-btn btn-remove-prod-row" title="Quitar">✕</button>
+    `;
+    row.querySelector(".btn-remove-prod-row").addEventListener("click", () => row.remove());
+    contenedor.appendChild(row);
+  }
 
-  // ---------- INIT ----------
-  renderCalendar();
-  renderInventory();
+  // ---------- EVENTOS ESTÁTICOS ----------
+  function setupStaticEventListeners() {
+    document.getElementById("prevBtn").addEventListener("click", () => { current.setMonth(current.getMonth()-1); renderCalendar(); });
+    document.getElementById("nextBtn").addEventListener("click", () => { current.setMonth(current.getMonth()+1); renderCalendar(); });
+    document.getElementById("todayBtn").addEventListener("click", () => { current = new Date(); current.setDate(1); renderCalendar(); });
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    document.getElementById("closeHistorialBtn").addEventListener("click", () => document.getElementById("clienteHistorialModal").classList.remove("show"));
+
+    document.getElementById("btnAgendarCita").addEventListener("click", async () => {
+      const cliente = document.getElementById("clienteInput").value.trim();
+      const servicio = document.getElementById("servicioInput").value.trim();
+      const hora = document.getElementById("horaInput").value;
+      const precioEst = parseFloat(document.getElementById("precioEstInput").value) || 0;
+      if (!cliente || !servicio) { alert("Nombre y Servicio son obligatorios"); return; }
+      const nuevaCita = { dateKey: selectedDateKey, cliente, servicio, hora, precioEst };
+
+      if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "appointments"), nuevaCita); }
+      else {
+        if (!appointments[selectedDateKey]) appointments[selectedDateKey] = [];
+        appointments[selectedDateKey].push({ id: "local_" + Date.now(), ...nuevaCita });
+        saveLocal("salon_appts_v1", appointments); renderCalendar(); renderApptList(selectedDateKey);
+      }
+      closeModal();
+    });
+
+    // Nueva Atención
+    document.getElementById("btnNuevaAtencion").addEventListener("click", () => {
+      document.getElementById("aFechaInput").value = new Date().toISOString().split('T')[0];
+      document.getElementById("prodUsedList").innerHTML = "";
+      document.getElementById("atencionModal").classList.add("show");
+    });
+    const closeAtencion = () => {
+      document.getElementById("atencionModal").classList.remove("show");
+      document.getElementById("aClienteInput").value = ""; document.getElementById("aServicioInput").value = "";
+      document.getElementById("aPrecioInput").value = ""; document.getElementById("aNotasInput").value = "";
+    };
+    document.getElementById("closeAtencionBtn").addEventListener("click", closeAtencion);
+    document.getElementById("btnAddProd").addEventListener("click", agregarFilaProducto);
+
+    document.getElementById("btnGuardarAtencion").addEventListener("click", async () => {
+      const cliente = document.getElementById("aClienteInput").value.trim();
+      const fecha = document.getElementById("aFechaInput").value;
+      const servicio = document.getElementById("aServicioInput").value.trim();
+      const precio = parseFloat(document.getElementById("aPrecioInput").value) || 0;
+      const metodoPago = document.getElementById("aMetodoPagoInput").value;
+      const notas = document.getElementById("aNotasInput").value.trim();
+
+      if (!cliente || !servicio || !fecha) { alert("Completa los campos obligatorios"); return; }
+
+      const listaProds = [];
+      for (let fila of document.querySelectorAll(".prod-used-row")) {
+        const prodId = fila.querySelector(".select-prod").value;
+        const cant = parseFloat(fila.querySelector(".input-cant-prod").value) || 0;
+        if (prodId && cant > 0) {
+          const itemInv = inventory.find(i => i.id === prodId);
+          if (itemInv) {
+            listaProds.push({ id: prodId, nombre: itemInv.nombre, cantidad: cant, unidad: itemInv.unidad || "g" });
+            const nuevoStock = Math.max(0, parseFloat(itemInv.cantidad || 0) - cant);
+            const nuevoHistoricoUsado = parseFloat(itemInv.totalUsado || 0) + cant;
+            if (fb.ready) {
+              await fb.setDoc(fb.doc(fb.db, "inventory", prodId), { cantidad: nuevoStock, totalUsado: nuevoHistoricoUsado }, { merge: true });
+              await fb.addDoc(fb.collection(fb.db, "historial"), { nombre: itemInv.nombre, cliente, servicio, cantidad: cant, unidad: itemInv.unidad||"g", fecha });
+            } else {
+              itemInv.cantidad = nuevoStock; itemInv.totalUsado = nuevoHistoricoUsado;
+              historial.push({ nombre: itemInv.nombre, cliente, servicio, cantidad: cant, unidad: itemInv.unidad||"g", fecha });
+            }
+          }
+        }
+      }
+
+      const nuevaAtencion = { cliente, fecha, servicio, precio, metodoPago, notas, productos: listaProds };
+      if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "atenciones"), nuevaAtencion); }
+      else {
+        atenciones.unshift({ id: "local_" + Date.now(), ...nuevaAtencion });
+        saveLocal("salon_atenciones_v1", atenciones); saveLocal("salon_inv_v1", inventory); saveLocal("salon_hist_v1", historial);
+        renderAtenciones(); renderResumen(); renderInventory(); renderHistorial();
+      }
+      closeAtencion();
+    });
+
+    // Nuevo Cliente
+    document.getElementById("btnNuevoCliente").addEventListener("click", () => {
+      document.getElementById("clienteModal").classList.add("show");
+    });
+    const closeCliente = () => {
+      document.getElementById("clienteModal").classList.remove("show");
+      document.getElementById("cNombreInput").value = ""; document.getElementById("cTelefonoInput").value = "";
+      document.getElementById("cCumpleInput").value = ""; document.getElementById("cCorreoInput").value = "";
+      document.getElementById("cPreferenciasInput").value = "";
+    };
+    document.getElementById("closeClienteBtn").addEventListener("click", closeCliente);
+    
+    document.getElementById("btnGuardarCliente").addEventListener("click", async () => {
+      const nombre = document.getElementById("cNombreInput").value.trim();
+      const telefono = document.getElementById("cTelefonoInput").value.trim();
+      const cumple = document.getElementById("cCumpleInput").value;
+      const correo = document.getElementById("cCorreoInput").value.trim();
+      const preferencias = document.getElementById("cPreferenciasInput").value.trim();
+
+      if (!nombre) { alert("El nombre es obligatorio"); return; }
+      const nuevoCliente = { nombre, telefono, cumple, correo, preferencias };
+
+      if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "clientes"), nuevoCliente); }
+      else {
+        clientes.push({ id: "local_" + Date.now(), ...nuevoCliente });
+        saveLocal("salon_clientes_v1", clientes); renderClientes();
+      }
+      closeCliente();
+    });
+
+    document.getElementById("filtroCliente").addEventListener("input", renderAtenciones);
+    document.getElementById("filtroBaseClientes").addEventListener("input", renderClientes);
+
+    // Agregar Producto Inventario
+    document.getElementById("invAddBtn").addEventListener("click", async () => {
+      const nombre = document.getElementById("invNameInput").value.trim();
+      const cantidad = parseFloat(document.getElementById("invQtyInput").value) || 0;
+      const unidad = document.getElementById("invUnitInput").value.trim() || "g";
+      if (!nombre) return;
+      if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "inventory"), { nombre, cantidad, unidad, totalUsado: 0 }); }
+      else {
+        inventory.push({ id: "local_"+Date.now(), nombre, cantidad, unidad, totalUsado: 0 });
+        saveLocal("salon_inv_v1", inventory); renderInventory();
+      }
+      document.getElementById("invNameInput").value = ""; document.getElementById("invQtyInput").value = ""; document.getElementById("invUnitInput").value = "";
+    });
+  }
 </script>
-
 </body>
 </html>
