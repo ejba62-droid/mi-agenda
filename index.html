@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda · Salón Margaret</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f3acbe">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Salón Margaret">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" href="icons/icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -369,6 +379,35 @@
     .stat-box .sub { font-size: 12px; color: var(--ink-soft); }
 
     /* -----------------------------------------
+       VISTA: GASTOS
+    ----------------------------------------- */
+    .gasto-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .gasto-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .gasto-top .name { font-weight: 700; font-size: 16px; }
+    .gasto-top .date { font-size: 12px; color: var(--ink-soft); }
+    .gasto-monto { font-weight: 700; color: var(--red); font-size: 16px; }
+    .gasto-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+
+    /* -----------------------------------------
        VISTA 3: FICHAS TÉCNICAS
     ----------------------------------------- */
     .clientes-grid {
@@ -621,6 +660,7 @@
     <div class="tab active" data-view="agenda">Agenda</div>
     <div class="tab" data-view="atenciones">Atenciones Diario</div>
     <div class="tab" data-view="clientes">Fichas Técnicas</div>
+    <div class="tab" data-view="gastos">Gastos</div>
     <div class="tab" data-view="inventario">Inventario Insumos</div>
   </nav>
 
@@ -682,6 +722,47 @@
       Sin coincidencias.
     </div>
     <div class="clientes-grid" id="clientesGridList"></div>
+  </main>
+
+  <main id="view-gastos" class="view">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
+      <select id="filtroGastoCategoria" style="max-width:220px;">
+        <option value="">Todas las categorías</option>
+        <option value="Tinte">Tinte</option>
+        <option value="Alisado/Keratina">Alisado / Keratina</option>
+        <option value="Insumos Generales">Insumos Generales</option>
+        <option value="Equipamiento">Equipamiento</option>
+        <option value="Servicios">Servicios (luz, agua, arriendo)</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <button id="btnNuevoGasto" class="btn">🧾 Registrar Gasto</button>
+    </div>
+    <div class="dashboard-grid">
+      <div>
+        <div id="gastoEmpty" style="display:none; padding:30px; background:var(--surface); text-align:center; border-radius:12px; border:1px solid var(--line); font-style:italic; color:var(--ink-soft);">
+          Sin gastos registrados.
+        </div>
+        <div id="gastoList" class="cards-grid"></div>
+      </div>
+      <aside class="panel-resumen">
+        <h3>Balances de Gastos</h3>
+        <div class="stat-box">
+          <label>Gasto del Mes</label>
+          <div class="val" id="gastoTotalMes">$0</div>
+          <div class="sub" id="gastoCountMes">0 registros</div>
+        </div>
+        <div class="stat-box">
+          <label>Gasto de la Semana</label>
+          <div class="val" id="gastoTotalSemana">$0</div>
+          <div class="sub" id="gastoCountSemana">0 registros</div>
+        </div>
+        <div class="stat-box">
+          <label>Histórico Acumulado</label>
+          <div class="val" id="gastoTotalHistorico">$0</div>
+          <div class="sub" id="gastoCountTotal">0 registros</div>
+        </div>
+      </aside>
+    </div>
   </main>
 
   <main id="view-inventario" class="view">
@@ -832,6 +913,49 @@
     </div>
   </div>
 
+  <div id="gastoModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="gastoModalTitle">Registrar Gasto</h3>
+        <button id="closeGastoBtn" class="icon-btn">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Concepto *</label>
+        <input type="text" id="gConceptoInput" placeholder="Ej. Tinte IGORA 7-0, Alisado Salerm...">
+      </div>
+      <div class="form-group">
+        <label>Categoría *</label>
+        <select id="gCategoriaInput">
+          <option value="Tinte">Tinte</option>
+          <option value="Alisado/Keratina">Alisado / Keratina</option>
+          <option value="Insumos Generales">Insumos Generales</option>
+          <option value="Equipamiento">Equipamiento</option>
+          <option value="Servicios">Servicios (luz, agua, arriendo)</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group">
+          <label>Monto ($) *</label>
+          <input type="number" id="gMontoInput" placeholder="Total $">
+        </div>
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="gFechaInput">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Proveedor / Tienda</label>
+        <input type="text" id="gProveedorInput" placeholder="Ej. Distribuidora Capilar Ltda.">
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea id="gNotasInput" rows="2" placeholder="Detalle adicional (opcional)"></textarea>
+      </div>
+      <button id="btnGuardarGasto" class="btn">Guardar Gasto</button>
+    </div>
+  </div>
+
   <div id="clienteHistorialModal" class="modal">
     <div class="modal-content" style="max-width:500px;">
       <div class="modal-header">
@@ -884,7 +1008,7 @@
     const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
     let current = new Date(); current.setDate(1);
     
-    let appointments = {}, atenciones = [], inventory = [], historial = [], clientes = [], selectedDateKey = null, editingAtencionId = null;
+    let appointments = {}, atenciones = [], inventory = [], historial = [], clientes = [], gastos = [], selectedDateKey = null, editingAtencionId = null, editingGastoId = null;
 
     function loadLocal() {
       try { appointments = JSON.parse(localStorage.getItem("salon_appts_v1") || "{}"); } catch { appointments = {}; }
@@ -892,6 +1016,7 @@
       try { inventory = JSON.parse(localStorage.getItem("salon_inv_v1") || "[]"); } catch { inventory = []; }
       try { historial = JSON.parse(localStorage.getItem("salon_hist_v1") || "[]"); } catch { historial = []; }
       try { clientes = JSON.parse(localStorage.getItem("salon_clientes_v1") || "[]"); } catch { clientes = []; }
+      try { gastos = JSON.parse(localStorage.getItem("salon_gastos_v1") || "[]"); } catch { gastos = []; }
     }
     function saveLocal(k, d) { localStorage.setItem(k, JSON.stringify(d)); }
 
@@ -943,6 +1068,12 @@
         clientes.sort((a,b) => a.nombre.localeCompare(b.nombre));
         renderClientes();
       });
+
+      fb.onSnapshot(fb.collection(fb.db, "gastos"), snap => {
+        gastos = []; snap.forEach(d => gastos.push({ id: d.id, ...d.data() }));
+        gastos.sort((a,b) => (b.fecha||"").localeCompare(a.fecha||""));
+        renderGastos(); renderGastosResumen();
+      });
       initUI();
     }
 
@@ -956,7 +1087,7 @@
     });
 
     function initUI() {
-      renderCalendar(); renderInventory(); renderAtenciones(); renderResumen(); renderHistorial(); renderClientes();
+      renderCalendar(); renderInventory(); renderAtenciones(); renderResumen(); renderHistorial(); renderClientes(); renderGastos(); renderGastosResumen();
       setupStaticEventListeners();
     }
 
@@ -1124,6 +1255,73 @@
       if (!confirm(`¿Eliminar ficha de ${c.nombre}?`)) return;
       if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "clientes", c.id)); }
       else { clientes = clientes.filter(i => i.id !== c.id); saveLocal("salon_clientes_v1", clientes); renderClientes(); }
+    }
+
+    function renderGastos() {
+      const list = document.getElementById("gastoList"); list.innerHTML = "";
+      const filtroCat = document.getElementById("filtroGastoCategoria").value;
+      const filtrados = gastos.filter(g => !filtroCat || g.categoria === filtroCat);
+      document.getElementById("gastoEmpty").style.display = filtrados.length === 0 ? "block" : "none";
+      filtrados.forEach(g => {
+        const card = document.createElement("div"); card.className = "gasto-card";
+        card.innerHTML = `
+          <div class="gasto-top">
+            <div><div class="name">${escapeHtml(g.concepto)}</div><div class="date">${formatDate(g.fecha)}</div></div>
+            <div class="gasto-monto">${formatPeso(g.monto)}</div>
+          </div>
+          <div><span class="chip">${escapeHtml(g.categoria || "Otro")}</span>${g.proveedor ? ` <span class="chip" style="background:transparent; border-color:var(--line);">🏪 ${escapeHtml(g.proveedor)}</span>` : ''}</div>
+          ${g.notas ? `<div style="font-size:12.5px; font-style:italic; color:var(--ink-soft);">${escapeHtml(g.notas)}</div>` : ''}
+          <div class="gasto-actions">
+            <span></span>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-ghost btn-sm btn-editar-gasto">✏️ Editar</button>
+              <button class="btn btn-ghost btn-sm btn-eliminar-gasto">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+        card.querySelector(".btn-editar-gasto").addEventListener("click", () => editarGasto(g));
+        card.querySelector(".btn-eliminar-gasto").addEventListener("click", () => deleteGasto(g));
+        list.appendChild(card);
+      });
+    }
+
+    function renderGastosResumen() {
+      let totalM = 0, countM = 0, totalS = 0, countS = 0, totalH = 0;
+      const ahora = new Date(), esteMesStr = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+      const primerDiaSemana = new Date(ahora);
+      primerDiaSemana.setDate(ahora.getDate() + (ahora.getDay() === 0 ? -6 : 1 - ahora.getDay()));
+      primerDiaSemana.setHours(0,0,0,0);
+
+      gastos.forEach(g => {
+        const m = parseFloat(g.monto || 0); totalH += m;
+        if (g.fecha && g.fecha.startsWith(esteMesStr)) { totalM += m; countM++; }
+        if (g.fecha && new Date(g.fecha + "T00:00:00") >= primerDiaSemana) { totalS += m; countS++; }
+      });
+      document.getElementById("gastoTotalMes").textContent = formatPeso(totalM);
+      document.getElementById("gastoCountMes").textContent = `${countM} registro${countM!==1?'s':''}`;
+      document.getElementById("gastoTotalSemana").textContent = formatPeso(totalS);
+      document.getElementById("gastoCountSemana").textContent = `${countS} registro${countS!==1?'s':''}`;
+      document.getElementById("gastoTotalHistorico").textContent = formatPeso(totalH);
+      document.getElementById("gastoCountTotal").textContent = `${gastos.length} registro${gastos.length!==1?'s':''}`;
+    }
+
+    function editarGasto(g) {
+      editingGastoId = g.id;
+      document.getElementById("gConceptoInput").value = g.concepto || "";
+      document.getElementById("gCategoriaInput").value = g.categoria || "Otro";
+      document.getElementById("gMontoInput").value = g.monto || "";
+      document.getElementById("gFechaInput").value = g.fecha || "";
+      document.getElementById("gProveedorInput").value = g.proveedor || "";
+      document.getElementById("gNotasInput").value = g.notas || "";
+      document.getElementById("gastoModalTitle").textContent = "Editar Gasto";
+      document.getElementById("btnGuardarGasto").textContent = "Guardar Cambios";
+      document.getElementById("gastoModal").classList.add("show");
+    }
+
+    async function deleteGasto(g) {
+      if (!confirm(`¿Eliminar el gasto "${g.concepto}"?`)) return;
+      if (fb.ready) { await fb.deleteDoc(fb.doc(fb.db, "gastos", g.id)); }
+      else { gastos = gastos.filter(i => i.id !== g.id); saveLocal("salon_gastos_v1", gastos); renderGastos(); renderGastosResumen(); }
     }
 
     function openClienteHistorialModal(nombre) {
@@ -1341,6 +1539,49 @@
 
       document.getElementById("filtroCliente").addEventListener("input", renderAtenciones);
       document.getElementById("filtroBaseClientes").addEventListener("input", renderClientes);
+      document.getElementById("filtroGastoCategoria").addEventListener("change", renderGastos);
+
+      document.getElementById("btnNuevoGasto").addEventListener("click", () => {
+        editingGastoId = null;
+        document.getElementById("gastoModalTitle").textContent = "Registrar Gasto";
+        document.getElementById("btnGuardarGasto").textContent = "Guardar Gasto";
+        document.getElementById("gFechaInput").value = new Date().toISOString().split('T')[0];
+        document.getElementById("gastoModal").classList.add("show");
+      });
+      const closeGa = () => {
+        document.getElementById("gastoModal").classList.remove("show");
+        editingGastoId = null;
+        document.getElementById("gConceptoInput").value = ""; document.getElementById("gCategoriaInput").value = "Tinte";
+        document.getElementById("gMontoInput").value = ""; document.getElementById("gProveedorInput").value = "";
+        document.getElementById("gNotasInput").value = "";
+        document.getElementById("gastoModalTitle").textContent = "Registrar Gasto";
+        document.getElementById("btnGuardarGasto").textContent = "Guardar Gasto";
+      };
+      document.getElementById("closeGastoBtn").addEventListener("click", closeGa);
+
+      document.getElementById("btnGuardarGasto").addEventListener("click", async () => {
+        const concepto = document.getElementById("gConceptoInput").value.trim(), categoria = document.getElementById("gCategoriaInput").value;
+        const monto = parseFloat(document.getElementById("gMontoInput").value) || 0, fecha = document.getElementById("gFechaInput").value;
+        const proveedor = document.getElementById("gProveedorInput").value.trim(), notas = document.getElementById("gNotasInput").value.trim();
+        if (!concepto || !fecha || monto <= 0) { alert("Complete concepto, fecha y monto"); return; }
+        const nGa = { concepto, categoria, monto, fecha, proveedor, notas };
+
+        if (editingGastoId) {
+          if (fb.ready) { await fb.setDoc(fb.doc(fb.db, "gastos", editingGastoId), nGa, { merge: true }); }
+          else {
+            const idx = gastos.findIndex(x => x.id === editingGastoId);
+            if (idx > -1) { gastos[idx] = { ...gastos[idx], ...nGa }; saveLocal("salon_gastos_v1", gastos); }
+            renderGastos(); renderGastosResumen();
+          }
+        } else {
+          if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "gastos"), nGa); }
+          else {
+            gastos.unshift({ id: "l_" + Date.now(), ...nGa }); saveLocal("salon_gastos_v1", gastos);
+            renderGastos(); renderGastosResumen();
+          }
+        }
+        closeGa();
+      });
 
       document.getElementById("invAddBtn").addEventListener("click", async () => {
         const nombre = document.getElementById("invNameInput").value.trim(), cantidad = parseFloat(document.getElementById("invQtyInput").value) || 0;
@@ -1348,6 +1589,13 @@
         if (fb.ready) { await fb.addDoc(fb.collection(fb.db, "inventory"), { nombre, cantidad, unidad, totalUsado: 0 }); }
         else { inventory.push({ id: "l_"+Date.now(), nombre, cantidad, unidad, totalUsado: 0 }); saveLocal("salon_inv_v1", inventory); renderInventory(); }
         document.getElementById("invNameInput").value = ""; document.getElementById("invQtyInput").value = ""; document.getElementById("invUnitInput").value = "g";
+      });
+    }
+
+    // --- Registro de Service Worker (PWA) ---
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(err => console.warn("SW no registrado:", err));
       });
     }
   </script>
